@@ -12,7 +12,7 @@ setup(
     description='The quick and dirty Python packager for Windows',  
     long_description=long_description,
     long_description_content_type='text/x-rst',
-    url='',  # TODO
+    url='https://github.com/ricpol/winpackit',
     author='Riccardo Polignieri',  
     # author_email='', 
     classifiers=[
@@ -30,8 +30,8 @@ setup(
     keywords='packaging build development',  
     py_modules=['winpackit'],
     python_requires='>=3.6',
-    project_urls={    # TODO
-        'Source': '',
-        'Docs': '',
+    project_urls={
+        'Source': 'https://github.com/ricpol/winpackit',
+        'Docs': 'https://github.com/ricpol/winpackit/blob/master/docs.rst',
     },
 )
