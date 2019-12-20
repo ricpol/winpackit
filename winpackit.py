@@ -338,7 +338,7 @@ class Packit:
                 self.proj_dirs.append(proj_dir)
                 self.target_proj_dirs.append(target_projdir)
                 try:
-                    entrypoints = self._prepare_entry_points(project[1:], proj_dir)
+                    self._prepare_entry_points(project[1:], proj_dir)
                 except KeyError: # no entry-point here
                     pass
         if self.cfg.COPY_DIRS:
@@ -348,7 +348,7 @@ class Packit:
                 self.copy_dirs.append(copydir)
                 self.target_copy_dirs.append(target_copydir)
                 try:
-                    entrypoints = self._prepare_entry_points(cdir[1:], copydir)
+                    self._prepare_entry_points(cdir[1:], copydir)
                 except KeyError: # no entry-point here
                     pass
         self.msg(LOG_DEBUG, '->Debug - entry points:', self.entry_points)
