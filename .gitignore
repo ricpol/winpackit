@@ -1,0 +1,27 @@
+*.log
+
+*.py[codt]
+__pycache__
+
+# Packages
+*.egg
+*.egg-info
+dist
+build
+eggs
+parts
+bin
+var
+sdist
+develop-eggs
+.installed.cfg
+lib
+lib64
+
+
+testoutput
+winpackit_cache
+_todo.txt
+.vscode
+.pylintrc
+

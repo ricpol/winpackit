@@ -1,0 +1,4 @@
+arrow
+requests>2
+wxpython
+numpy
