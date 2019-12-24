@@ -191,17 +191,18 @@ class Packit:
         # your need with the same api (eg a dataclass).
         self.cfg = settings
         self.cache_dir = self.cfg.HERE / 'winpackit_cache'
+        # our project configuration, to be figured out later
+        self.proj_dirs = None # project dir(s)
+        self.copy_dirs = None # other non-project dir(s)
+        # target ("build") configuration, to be figured out later:
         timestr = time.strftime('%Y%m%d_%H%M%S')
         self.build_dir = self.cfg.HERE / f'winpackit_build_{timestr}'
-        self.target_py_version = None
-        self.target_py_dir = None
-        self.target_extra_paths = None
-        self.pip_is_present = False
-        self.proj_dirs = None
-        self.target_proj_dirs = None
-        self.copy_dirs = None
-        self.target_copy_dirs = None
-        self.entry_points = None
+        self.target_py_version = None # Python version
+        self.target_py_dir = None # Python root directory
+        self.pip_is_present = False # if Pip is currently installed
+        self.target_proj_dirs = None # project dir(s)
+        self.target_copy_dirs = None # other non-project dir(s)
+        self.entry_points = None # entry points (to both "projects" and "copy")
         if self.cfg.PIP_CACHE:
             self.cfg.PIP_ARGS.append(f'--cache-dir={self.cache_dir}')
         else:
@@ -264,8 +265,8 @@ class Packit:
         arch = 64 if sys.maxsize > 2**32 else 32
         if (ma, mi, mc) < MIN_TARGET_VERSION:
             ma, mi = MIN_TARGET_VERSION[:2]
-            mc = MAX_MICRO_VERSIONS[(ma, mi)]
-        fallback = ma, mi, mc, arch # long story short, the latest 3.5.x
+            mc = MAX_MICRO_VERSIONS[(ma, mi)] # long story short, latest 3.5.x
+        fallback = ma, mi, mc, arch
         self.msg(LOG_DEBUG, '->Debug - fallback Py version:', fallback)
         # architecture parsing
         wanted_py = self.cfg.PYTHON_VERSION
