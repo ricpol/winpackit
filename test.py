@@ -95,16 +95,17 @@ class BaseBuildTestCase(unittest.TestCase):
         self.basedir.mkdir(exist_ok=True)
         
     def tearDown(self):
-        with open((self.packit.build_dir / '_testconfig.txt'), 'a') as f:
-            f.write('This test build was made from this configuration:\n\n')
-            pprint(self.cfg.__dict__, stream=f)
         del self.cfg
 
     def start(self, buildir):
         self.packit = Packit(settings=self.cfg)
         self.packit.cache_dir = self.basedir / 'test_cachedir'
         self.packit.build_dir = self.basedir / buildir
-        self.packit.main()
+        ret = self.packit.main()
+        with open((self.packit.build_dir / '_testconfig.txt'), 'a') as f:
+            f.write('This test build was made from this configuration:\n\n')
+            pprint(self.cfg.__dict__, stream=f)
+        return ret
 
 
 class BuildTestCase(BaseBuildTestCase):
@@ -112,13 +113,15 @@ class BuildTestCase(BaseBuildTestCase):
 
     def test_build_no_project(self):
         buildir = Path('BuildTestCase_build_no_project')
-        self.start(buildir) 
+        ret = self.start(buildir) 
+        self.assertTrue(all(ret))
 
     def test_build0(self):
         self.cfg.PROJECTS = [['examples/project0', ('main.py', 'main'), 
                                                    ('readme.txt', 'readme')]]
         buildir = Path('BuildTestCase_build0')
-        self.start(buildir)
+        ret = self.start(buildir)
+        self.assertTrue(all(ret))
 
     def test_build1(self):
         self.cfg.PROJECTS = [['examples/project1', ('main.py', 'main'), 
@@ -126,7 +129,8 @@ class BuildTestCase(BaseBuildTestCase):
         self.cfg.COMPILE = True
         self.cfg.PYC_ONLY_DISTRIBUTION = True
         buildir = Path('BuildTestCase_build1')
-        self.start(buildir) 
+        ret = self.start(buildir) 
+        self.assertTrue(all(ret))
 
     def test_build2(self):
         self.cfg.PROJECTS = [
@@ -137,7 +141,8 @@ class BuildTestCase(BaseBuildTestCase):
                                       ('code/foo/side.py', 'fooside'), 
                                       ('docs/readme.txt', 'readme_project2')]]
         buildir = Path('BuildTestCase_build2')
-        self.start(buildir) 
+        ret = self.start(buildir) 
+        self.assertTrue(all(ret))
 
     def test_build3(self):
         self.cfg.PROJECTS = [['examples/project3/code with spaces', 
@@ -145,7 +150,8 @@ class BuildTestCase(BaseBuildTestCase):
         self.cfg.COPY_DIRS = [['examples/project3/docs with spaces', 
                                ('readme.txt', 'readme')]]
         buildir = Path('BuildTestCase_build3')
-        self.start(buildir)
+        ret = self.start(buildir)
+        self.assertTrue(all(ret))
 
     @unittest.skip('This one is going to pip-install *many* packages')
     def test_build4(self):
@@ -157,13 +163,15 @@ class BuildTestCase(BaseBuildTestCase):
         self.cfg.DEPENDENCIES = ['wxpython', 'numpy']
         self.cfg.REQUIREMENTS = 'examples/project4/requirements.txt'
         buildir = Path('BuildTestCase_build4')
-        self.start(buildir)
+        ret = self.start(buildir)
+        self.assertTrue(all(ret))
 
     def test_build5(self):
         self.cfg.PROJECTS = [['examples/project5/one', ('main.py', 'Main')], 
                              ['examples/project5/two']]
         buildir = Path('BuildTestCase_build5')
-        self.start(buildir)
+        ret = self.start(buildir)
+        self.assertTrue(all(ret))
 
     def test_build6(self):
         self.cfg.COMPILE = True
@@ -171,7 +179,28 @@ class BuildTestCase(BaseBuildTestCase):
         self.cfg.PROJECTS = [['examples/project6', ('main.pyw', 'Main'),
                                                    ('readme.txt', 'readme')]]
         buildir = Path('BuildTestCase_build6')
-        self.start(buildir)
+        ret = self.start(buildir)
+        self.assertTrue(all(ret))
+
+
+class FailBuildTestCase(BaseBuildTestCase):
+    # test various failures
+    
+    def test_fail1(self): # this obtains a bogus get_pip.py
+        self.cfg.PIP_REQUIRED = True
+        buildir = Path('BuildTestCase_fail1')
+        with mock.patch('winpackit.Packit.obtain_getpip', lambda i: 'bogus'):
+            ret = self.start(buildir)
+            self.assertEqual(ret, [True, False, True, True, True, True, True, True, False])
+
+    
+    def test_fail2(self): # this installs a bogus dependency
+        self.cfg.PIP_REQUIRED = True
+        self.cfg.DEPENDENCIES = ['total_bogus_packet_wont_install']
+        buildir = Path('BuildTestCase_fail2')
+        ret = self.start(buildir)
+        self.assertEqual(ret, [True, True, False, True, True, True, True, True, True])
+
 
 
 class BuildTestCase1(BaseBuildTestCase):
@@ -194,42 +223,50 @@ class BuildTestCase1(BaseBuildTestCase):
     def test_build_py35032(self):
         self.cfg.PYTHON_VERSION = '3.5.0-32'
         buildir = Path('BuildTestCase1_build_py35032')
-        self.start(buildir)
+        ret = self.start(buildir)
+        self.assertTrue(all(ret))
 
     def test_build_py35064(self):
         self.cfg.PYTHON_VERSION = '3.5.0'
         buildir = Path('BuildTestCase1_build_py35064')
-        self.start(buildir)
+        ret = self.start(buildir)
+        self.assertTrue(all(ret))
 
     def test_build_py35464(self):
         self.cfg.PYTHON_VERSION = '3.5.4'
         buildir = Path('BuildTestCase1_build_py35464')
-        self.start(buildir)
+        ret = self.start(buildir)
+        self.assertTrue(all(ret))
 
     def test_build_py36064(self):
         self.cfg.PYTHON_VERSION = '3.6.0'
         buildir = Path('BuildTestCase1_build_py36064')
-        self.start(buildir)
+        ret = self.start(buildir)
+        self.assertTrue(all(ret))
 
     def test_build_py36864(self):
         self.cfg.PYTHON_VERSION = '3.6.8'
         buildir = Path('BuildTestCase1_build_py36864')
-        self.start(buildir)
+        ret = self.start(buildir)
+        self.assertTrue(all(ret))
 
     def test_build_py37064(self):
         self.cfg.PYTHON_VERSION = '3.7.0'
         buildir = Path('BuildTestCase1_build_py37064')
-        self.start(buildir)
+        ret = self.start(buildir)
+        self.assertTrue(all(ret))
 
     def test_build_py37564(self):
         self.cfg.PYTHON_VERSION = '3.7.5'
         buildir = Path('BuildTestCase1_build_py37564')
-        self.start(buildir)
+        ret = self.start(buildir)
+        self.assertTrue(all(ret))
 
     def test_build_py38064(self):
         self.cfg.PYTHON_VERSION = '3.8.0'
         buildir = Path('BuildTestCase1_build_py38064')
-        self.start(buildir)
+        ret = self.start(buildir)
+        self.assertTrue(all(ret))
 
 
 if __name__ == '__main__':

@@ -647,6 +647,7 @@ class Packit:
                 self.msg(LOG_ALWAYS, op, str_ret)
         else:
             self.msg(LOG_VERBOSE, '\n\nDone.')
+        return retcodes
 
 
 # this is the auto-generated config script
