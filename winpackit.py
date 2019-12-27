@@ -561,10 +561,11 @@ class Packit:
                     old = self.build_dir / entrypoint[0]
                     new = old.with_suffix('.py')
                     os.rename(old, new)
+                if entrypoint[2] != '':
                     # book-keeping...
-                    self.entry_points[n][0] = self.entry_points[n][0].with_suffix('.py')
-                    self.msg(LOG_DEBUG, '->Debug - renamed pyw entry_points:', 
-                             self.entry_points)
+                    self.entry_points[n][0] = self.entry_points[n][0].with_suffix('.pyc')
+            self.msg(LOG_DEBUG, '->Debug - renamed pyc entry_points:',
+                     self.entry_points)
         got_errors = False
         # MUST compile with target python, not our current python!
         py_exec = self.target_py_dir / 'python.exe'
