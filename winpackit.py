@@ -379,6 +379,9 @@ class Packit:
     def obtain_getpip(self):
         """Download Get-pip, return filepath. If fails, return empty string."""
         self.msg(LOG_VERBOSE, "\n****** Obtaining Get-pip ******")
+        if not self.cfg.PIP_REQUIRED:
+            self.msg(LOG_VERBOSE, 'Skipped: no Pip required in config file.')
+            return ''
         f = self.getfile(GETPIP_URL, on_error_abort=False)
         if f:
             self.msg(LOG_VERBOSE, 'Get-pip successfully obtained.')
