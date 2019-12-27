@@ -185,7 +185,7 @@ class BuildTestCase(BaseBuildTestCase):
 
 class FailBuildTestCase(BaseBuildTestCase):
     # test various failures
-    
+
     def test_fail1(self): # this obtains a bogus get_pip.py
         self.cfg.PIP_REQUIRED = True
         buildir = Path('BuildTestCase_fail1')
@@ -193,7 +193,6 @@ class FailBuildTestCase(BaseBuildTestCase):
             ret = self.start(buildir)
             self.assertEqual(ret, [True, False, True, True, True, True, True, True, False])
 
-    
     def test_fail2(self): # this installs a bogus dependency
         self.cfg.PIP_REQUIRED = True
         self.cfg.DEPENDENCIES = ['total_bogus_packet_wont_install']
@@ -201,6 +200,35 @@ class FailBuildTestCase(BaseBuildTestCase):
         ret = self.start(buildir)
         self.assertEqual(ret, [True, True, False, True, True, True, True, True, True])
 
+    def test_fail3(self): # this packs a non-existent project
+        self.cfg.PROJECTS = [['examples/project0', ('main.py', 'main'), 
+                                                   ('readme.txt', 'readme')],
+                             ['examples/BOGUS']]
+        buildir = Path('BuildTestCase_fail3')
+        ret = self.start(buildir)
+        self.assertEqual(ret, [True, True, True, False, True, True, True, True, True])
+
+    def test_fail4(self): # this will hit a compile error
+        self.cfg.PROJECTS = [['examples/project7', ('main.py', 'main')]]
+        self.cfg.COMPILE = True
+        buildir = Path('BuildTestCase_fail4')
+        ret = self.start(buildir)
+        self.assertEqual(ret, [True, True, True, True, False, True, True, True, True])
+
+    def test_fail5(self): # this packs a non-existent "other" dir
+        self.cfg.PROJECTS = [['examples/project0', ('main.py', 'main'), 
+                                                   ('readme.txt', 'readme')]]
+        self.cfg.COPY_DIRS = [['examples/BOGUS']]
+        buildir = Path('BuildTestCase_fail5')
+        ret = self.start(buildir)
+        self.assertEqual(ret, [True, True, True, True, True, False, True, True, True])
+
+    def test_fail6(self): # this has a bogus entrypoint
+        self.cfg.PROJECTS = [['examples/project0', ('main.py', 'main'), 
+                                                   ('BOGUS', 'readme')]]
+        buildir = Path('BuildTestCase_fail6')
+        ret = self.start(buildir)
+        self.assertEqual(ret, [True, True, True, True, True, True, False, True, True])
 
 
 class BuildTestCase1(BaseBuildTestCase):

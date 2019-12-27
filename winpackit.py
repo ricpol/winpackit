@@ -501,20 +501,35 @@ class Packit:
             self.msg(LOG_VERBOSE, 
                      'ERROR: not all dependencies successfully installed.')
             return False
-        
+    
+    def _copy_files(self, orig, dest, ignore=None):
+        """Run shutil.copytree, return False if errors occurred."""
+        try:
+            shutil.copytree(orig, dest, ignore)
+            self.msg(LOG_VERBOSE, f'Files copied into {dest}.')
+            return True
+        except Exception as e:
+            self.msg(LOG_VERBOSE, f"ERROR: can't copy {orig}!")
+            self.msg(LOG_VERBOSE, 'The following exception was raised:')
+            self.msg(LOG_VERBOSE, e.__class__.__name__, e.args)
+            return False
+
     def copy_project_files(self):
-        """Copy project(s) files."""
+        """Copy project(s) files. Return False if any error occurred."""
         self.msg(LOG_VERBOSE, "\n****** Copying project files ******")
         if not self.target_proj_dirs:
             self.msg(LOG_VERBOSE, 'Skipped, no projects present.')
             return True
         self.msg(LOG_DEBUG, '->Debug - Copytree ignore patterns:', 
                  self.cfg.PROJECT_FILES_IGNORE_PATTERNS)
+        no_errors = True
         for orig, dest in zip(self.proj_dirs, self.target_proj_dirs):
-            shutil.copytree(orig, dest, ignore=shutil.ignore_patterns(
-                                    *self.cfg.PROJECT_FILES_IGNORE_PATTERNS))
-            self.msg(LOG_VERBOSE, f'Files copied into {dest}.')
-        return True
+            if not self._copy_files(orig, dest, ignore=shutil.ignore_patterns(
+                                    *self.cfg.PROJECT_FILES_IGNORE_PATTERNS)):
+                no_errors = False
+        if not no_errors:
+            self.msg(LOG_VERBOSE, 'ERROR: not all projects successfully copied.')
+        return no_errors
 
     def copy_other_files(self):
         """Copy non-project files, i.e. those in COPY_DIRS."""
@@ -522,10 +537,13 @@ class Packit:
         if not self.target_copy_dirs:
             self.msg(LOG_VERBOSE, 'Skipped, no other dirs to copy.')
             return True
+        no_errors = True
         for orig, dest in zip(self.copy_dirs, self.target_copy_dirs):
-            shutil.copytree(orig, dest)
-            self.msg(LOG_VERBOSE, f'Files copied into {dest}.')
-        return True
+            if not self._copy_files(orig, dest):
+                no_errors = False
+        if not no_errors:
+            self.msg(LOG_VERBOSE, 'ERROR: not all projects successfully copied.')
+        return no_errors
 
     def compile_files(self):
         """Compile all py modules, remove originals if needed."""
@@ -578,6 +596,11 @@ class Packit:
         if not self.entry_points:
             self.msg(LOG_VERBOSE, 'Skipped, no entry point present.')
             return True
+        # all entrypoints should have been copied by now...
+        got_errors = False
+        for p, n, f in self.entry_points:
+            if not (self.build_dir / p).exists():
+                got_errors = True
         entrypoints = [[str(p), n, f] for p, n, f in self.entry_points]
         script = BOOTSTRAP_PY_SCRIPT.format(
                                         pydirname=self.target_py_dir.name,
@@ -590,6 +613,9 @@ class Packit:
         with open(self.build_dir / 'install.bat', 'a') as f:
             f.write('echo off\n')
             f.write(txt)
+        if got_errors:
+            self.msg(LOG_VERBOSE, 'ERROR: not all entry points actually exist.')
+            return False
         self.msg(LOG_VERBOSE, 'Bootstrap entry point successfully created.')
         return True
 
