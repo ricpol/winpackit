@@ -45,7 +45,7 @@ See examples folder for a few kind of projects you can build with this script.
 __all__ = ['BOOTSTRAP_PY_SCRIPT', 'PACKIT_CONFIG_SCRIPT', 'GETPIP_URL', 'PY_URL',
            'LOG_ALWAYS', 'LOG_DEBUG', 'LOG_VERBOSE', 
            'MAX_MAJOR_VERSION', 'MAX_MICRO_VERSIONS', 'MAX_MINOR_VERSIONS', 
-           'MIN_TARGET_VERSION', 'Packit', 'make_runner_script']
+           'MIN_TARGET_VERSION', 'Packit', 'make_runner_script', 'version']
 
 import sys
 import os
@@ -56,6 +56,8 @@ import subprocess
 
 from pathlib import Path
 from urllib.request import urlretrieve
+
+version = '0.6.0'
 
 # Python version book-keeping
 MAX_MICRO_VERSIONS = {(3, 5): 4, (3, 6): 8, (3, 7): 6, (3, 8): 1}
@@ -822,7 +824,8 @@ if __name__ == '__main__':
 
 def make_runner_script(namefile):
     namefile = Path(namefile)
-    print('Generating a new runner module for the WinPackIt script...')
+    print(f'This is the WinPackIt script version {version}.')
+    print('Generating a new runner module...')
     if namefile.exists():
         print(f'\nA file named {str(namefile)} is already present!')
         print('Delete or rename this file, then try again.')

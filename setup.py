@@ -8,7 +8,7 @@ with open(path.join(here, 'readme.rst'), encoding='utf-8') as f:
 
 setup(
     name='WinPackIt', 
-    version='0.5.0',
+    version='0.6.0',
     description='The quick and dirty Python packager for Windows',  
     long_description=long_description,
     long_description_content_type='text/x-rst',
