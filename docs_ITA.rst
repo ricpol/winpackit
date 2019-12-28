@@ -123,6 +123,8 @@ Questa è la versione del Python della vostra distribuzione. Lasciate ``3`` per 
 
 Un valore non valido (o vuoto) punterà alla versione del *vostro* Python attuale. Se il vostro Python non ha un "embeddable package" su cui basare la distribuzione, ``PYTHON_VERSION`` sarà ``3.5`` di default. Ricordiamo che non sono disponibili "embeddable package" prima della versione ``3.5.0``. 
 
+**Nota**: inoltre non sono disponibili "embeddable package" per le release "security fix" ``3.5.5+`` e ``3.6.9+``.
+
 ``PIP_REQUIRED``
 ^^^^^^^^^^^^^^^^
 

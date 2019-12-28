@@ -64,17 +64,17 @@ class BasicTestCase(unittest.TestCase):
         self.cfg.PYTHON_VERSION = '3.5.20'
         self.assertEqual(self.packit.parse_pyversion(), (3, 5, 4, 64))
         self.cfg.PYTHON_VERSION = '3.7'
-        self.assertEqual(self.packit.parse_pyversion(), (3, 7, 5, 64))
+        self.assertEqual(self.packit.parse_pyversion(), (3, 7, 6, 64))
         self.cfg.PYTHON_VERSION = '3.7-32'
-        self.assertEqual(self.packit.parse_pyversion(), (3, 7, 5, 32))
+        self.assertEqual(self.packit.parse_pyversion(), (3, 7, 6, 32))
         self.cfg.PYTHON_VERSION = '3.18'
-        self.assertEqual(self.packit.parse_pyversion(), (3, 8, 0, 64))
+        self.assertEqual(self.packit.parse_pyversion(), (3, 8, 1, 64))
         self.cfg.PYTHON_VERSION = '3'
-        self.assertEqual(self.packit.parse_pyversion(), (3, 8, 0, 64))
+        self.assertEqual(self.packit.parse_pyversion(), (3, 8, 1, 64))
         self.cfg.PYTHON_VERSION = '3-32'
-        self.assertEqual(self.packit.parse_pyversion(), (3, 8, 0, 32))
+        self.assertEqual(self.packit.parse_pyversion(), (3, 8, 1, 32))
         self.cfg.PYTHON_VERSION = '4'
-        self.assertEqual(self.packit.parse_pyversion(), (3, 8, 0, 64))
+        self.assertEqual(self.packit.parse_pyversion(), (3, 8, 1, 64))
         self.cfg.PYTHON_VERSION = 'bogus'
         with mock.patch('sys.version_info', (2, 7, 10)):
             self.assertEqual(self.packit.parse_pyversion(), (3, 5, 4, 64))

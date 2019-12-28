@@ -124,6 +124,8 @@ This will be the *target* Python version (i.e., that of your distribution). Leav
 
 An invalid (or blank) value will default to your current Python version. If your Python doesn't match any available embeddable distribution, ``PYTHON_VERSION`` will default to ``3.5``. Remember that no embeddable Python distribution is available prior to ``3.5.0`` version. 
 
+**Note**: also, there is no embeddable distribution available for security fix-only versions ``3.5.5+`` and ``3.6.9+``. 
+
 ``PIP_REQUIRED``
 ^^^^^^^^^^^^^^^^
 

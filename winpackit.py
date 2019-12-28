@@ -58,16 +58,20 @@ from pathlib import Path
 from urllib.request import urlretrieve
 
 # Python version book-keeping
-MAX_MICRO_VERSIONS = {(3, 5): 4, (3, 6): 8, (3, 7): 5, (3, 8): 0}
+MAX_MICRO_VERSIONS = {(3, 5): 4, (3, 6): 8, (3, 7): 6, (3, 8): 1}
 MAX_MINOR_VERSIONS = {3: 8}
 MAX_MAJOR_VERSION = 3          # this won't change for... a while
 MIN_TARGET_VERSION = (3, 5, 0) # this won't change, ever
 
 # download urls for embeddable Pythons
 PY_URL = {
+    (3,8,1,64): 'https://www.python.org/ftp/python/3.8.1/python-3.8.1-embed-amd64.zip',
+    (3,8,1,32): 'https://www.python.org/ftp/python/3.8.1/python-3.8.1-embed-win32.zip',
     (3,8,0,64): 'https://www.python.org/ftp/python/3.8.0/python-3.8.0-embed-amd64.zip', 
     (3,8,0,32): 'https://www.python.org/ftp/python/3.8.0/python-3.8.0-embed-win32.zip', 
 
+    (3,7,6,64): 'https://www.python.org/ftp/python/3.7.6/python-3.7.6-embed-amd64.zip',
+    (3,7,6,32): 'https://www.python.org/ftp/python/3.7.6/python-3.7.6-embed-win32.zip',
     (3,7,5,64): 'https://www.python.org/ftp/python/3.7.5/python-3.7.5-embed-amd64.zip', 
     (3,7,5,32): 'https://www.python.org/ftp/python/3.7.5/python-3.7.5-embed-win32.zip', 
     (3,7,4,64): 'https://www.python.org/ftp/python/3.7.4/python-3.7.4-embed-amd64.zip', 
@@ -81,6 +85,7 @@ PY_URL = {
     (3,7,0,64): 'https://www.python.org/ftp/python/3.7.0/python-3.7.0-embed-amd64.zip', 
     (3,7,0,32): 'https://www.python.org/ftp/python/3.7.0/python-3.7.0-embed-win32.zip', 
 
+    # no embeddable package available for 3.6.9/3.6.10
     (3,6,8,64): 'https://www.python.org/ftp/python/3.6.8/python-3.6.8-embed-amd64.zip', 
     (3,6,8,32): 'https://www.python.org/ftp/python/3.6.8/python-3.6.8-embed-win32.zip', 
     (3,6,7,64): 'https://www.python.org/ftp/python/3.6.7/python-3.6.7-embed-amd64.zip', 
@@ -100,6 +105,7 @@ PY_URL = {
     (3,6,0,64): 'https://www.python.org/ftp/python/3.6.0/python-3.6.0-embed-amd64.zip', 
     (3,6,0,32): 'https://www.python.org/ftp/python/3.6.0/python-3.6.0-embed-win32.zip', 
 
+    # no embeddable package available for 3.5.5/3.5.9
     (3,5,4,64): 'https://www.python.org/ftp/python/3.5.4/python-3.5.4-embed-amd64.zip', 
     (3,5,4,32): 'https://www.python.org/ftp/python/3.5.4/python-3.5.4-embed-win32.zip', 
     (3,5,3,64): 'https://www.python.org/ftp/python/3.5.3/python-3.5.3-embed-amd64.zip', 
