@@ -44,18 +44,18 @@ Occorre Python 3.6+ per usare WinPackIt sul vostro computer. Non c'è bisogno di
 
 Dal lato dell'utente finale, potete generare "build" basati su qualsiasi versione di Python dalla 3.5 in poi. Non è necessario che il vostro Python sia uguale a quello della "build": WinPackIt userà il Python della "build" per invocare ``pip install``, non il vostro. Quindi Pip troverà i pacchetti giusti per l'ambiente della distribuzione. S'intende che resta compito vostro verificare che il programma funzioni come previsto.
 
-Occorre fare attenzione all'architettura del sistema: potete scegliere tra distribuzioni a 32 e 64 bit: ma se voi avete Windows a 32 bit e scegliete una distribuzione a 64 bit, allora WinPackIt non sarà in grado di far funzionare il Python della distribuzione sul vostro computer, e quindi non potrà installare i pacchetti esterni né compilare i ``.pyc``. Anche così, potrebbe comunque funzionare se non avete bisogno di pacchetti esterni e non vi iporta di compilare i moduli. 
+Se scegliete una distribuzione a 64 bit, considerate che gli utenti finali non potranno farla funzionare sul loro computer, se questo è a 32 bit. 
 
-All'inverso, se scegliete una distribuzione a 64 bit, considerate che gli utenti finali non potranno farla funzionare sul loro computer, se questo è a 32 bit. 
+Utenti Linux/Mac/Windows 32 bit.
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Utenti Linux/Mac.
-^^^^^^^^^^^^^^^^^
+WinPackIt funziona anche su Linux/Mac, naturalmente. Tuttavia, la sua routine prevede di invocare il Pyhton della distribuzione alcune volte per installare i pacchetti esterni e compilare i file ``.pyc``: e questo non è certamente possibile su Linux. Tuttavia, se non avete pacchetti esterni e non vi importa di compilare i file, WinPackIt dovrebbe funzionare senza problemi.
 
-WinPackIt funziona anche su Linux, naturalmente. Tuttavia, la sua routine prevede di invocare il Pyhton della distribuzione alcune volte per installare i pacchetti esterni e compilare i file ``.pyc``: e questo non è certamente possibile su Linux. Tuttavia, se non avete pacchetti esterni e non vi importa di compilare i file, WinPackIt dovrebbe funzionare senza problemi.
+Ma anche se siete su Windows, l'architettura del sistema può essere un ostacolo. Potete scegliere tra distribuzioni a 32 e 64 bit: ma se voi avete Windows a 32 bit e scegliete una distribuzione a 64 bit, allora WinPackIt non sarà in grado di far funzionare il Python della distribuzione sul vostro computer, e quindi non potrà installare i pacchetti esterni né compilare i ``.pyc``. Di nuovo, potrebbe comunque funzionare se non avete bisogno di pacchetti esterni e non vi iporta di compilare i moduli. 
 
-In futuro prevedo di aggiungere l'opzione di far girare il Python della distribuzione *solo* sulla macchina dell'utente finale: in questo modo anche il cross/building dovrebbe diventare possibile, sia tra Windows e Linux sia tra piattaforme a 32 e 64 bit. 
+Ma se invece *avete* bisogno di installare pacchetti esterni, potete impostare l'opzione ``DELAYED_INSTALL`` (vedi sotto): così lasciate il compito di far girare il Python della distribuzione solo a "install time", sulla macchina dell'utente finale. In questo modo potete sfruttare fino in fondo WinPackiIt anche su Linux/Mac (o su Windows a 32 bit, se volete produrre una distribuzione a 64 bit).
 
-Ma anche in questo caso, sareste in grado di generare una distribuzione Windows su una macchina Linux, ma certamente non potrete testarla dopo. 
+In ogni caso, tenete presente che anche se siete in grado di generare una distribuzione Windows su una macchina Linux, certamente non potrete testarla dopo. 
 
 Una nota su Tkinter.
 ^^^^^^^^^^^^^^^^^^^^
@@ -124,6 +124,15 @@ Questa è la versione del Python della vostra distribuzione. Lasciate ``3`` per 
 Un valore non valido (o vuoto) punterà alla versione del *vostro* Python attuale. Se il vostro Python non ha un "embeddable package" su cui basare la distribuzione, ``PYTHON_VERSION`` sarà ``3.5`` di default. Ricordiamo che non sono disponibili "embeddable package" prima della versione ``3.5.0``. 
 
 **Nota**: inoltre non sono disponibili "embeddable package" per le release "security fix" ``3.5.5+`` e ``3.6.9+``.
+
+``DELAYED_INSTALL``
+^^^^^^^^^^^^^^^^^^^
+
+Se impostato, produce una "installazione ritardata" sulla macchina dell'utente finale. WinPackIt non installerà pacchetti esterni e non compilerà i file ``.pyc`` nella vostra directory "build": invece, lascerà le istruzioni necessarie per svolgere questi compiti sulla macchina dell'utente. In questo modo, il Python della distribuzione non dovrà mai essere avviato da WinPackIt sulla vostra macchina.
+
+Impostate questa opzione se siete su Linux/Mac, dal momento che l'eseguibile (Windows) di Python semplicemente non può funzionare sul vostro computer. Inoltre, impostate questa opzione se siete su Windows a 32 bit e volete produrre una distribuzione a 64 bit. 
+
+Se non c'è bisogno di pacchetti esterni né di compilare i ``.pyc`` (vedi le opzioni ``PIP_REQUIRED``, ``REQUIREMENTS``, ``DEPENDENCIES`` e ``COMPILE`` qui sotto), allora questa impostazione non avrà effetto. 
 
 ``PIP_REQUIRED``
 ^^^^^^^^^^^^^^^^
@@ -208,6 +217,8 @@ Se impostato, WinPackIt rimuoverà inoltre i file ``.py`` originali dalla distri
 
 Se impostate questa opzione, anche i moduli entry-point saranno compilati e rimossi. Tuttavia WinPackIt ricorderà l'estensione originale (``.py`` o ``.pyw``) e associerà anche i moduli compilati al corrispondente eseguibile Python. 
 
+Se avete selezionato una "installazione ritardata" (vedi l'opzione ``DELAYED_INSTALL`` qui sopra), allora la "pyc-only distribution" sarà ancora più vulnerabile del solito. I file ``.py`` originali *devono* essere inclusi nella distribuzione, per poterli compilare sulla macchina dell'utente. In seguito WinPackIt li cancellerà, ma basta solo che l'utente li apra e li esamini *prima* di avviare il file batch ``install.bat`` per completare l'installazione.
+
 ``COPY_DIRS``
 ^^^^^^^^^^^^^
 
@@ -237,6 +248,8 @@ Azioni post-deploy.
 Se adesso aprite la directory "build", vedrete che WinPackIt ha lasciato uno script Python ``winpackit_bootstrap/bootstrap.py`` che l'utente finale deve eseguire per completare l'installazione sulla sua macchina. Questo script sarà avviato facendo doppio clic su un comodo ``install.bat`` che potete vedere nella directory "build".
 
 Questo script di avvio produce i collegamenti Windows che avete elencato nelle impostazioni ``PROJECTS`` e ``COPY_DIRS`` viste sopra. I collegamenti *devono* essere creati sul computer dell'utente, perché la loro configurazione dipende dal file system locale.
+
+Se avete selezionato una "installazione ritardata" (vedi l'opzione ``DELAYED_INSTALL`` qui sopra), allora lo script di avvio si occuperà anche di scaricare e installare i pacchetti esterni necessari e/o di compilare i file ``.pyc``. Se qualcosa va storto, dite all'utente di mandarvi il file di log ``winpackit_bootstrap/install.log`` e ispezionatelo. 
 
 Potete approfittarne per aggiungere delle azioni post-deploy personalizzate nel modulo Python di bootstrap. Ricordate solo che questo codice verrà eseguito sulla macchina dell'utente, non sulla vostra: accordate bene le vostre path.
 

@@ -45,18 +45,18 @@ You will need Python 3.6+ to run WinPackIt on your system. No external dependenc
 
 On the target side, you can produce builds based on any Python 3.5+. You don't have to match your own Python with the target Python: WinPackIt will run the *target* ``pip install``, not yours: so, Pip will take care of choosing the correct packages. Of course you still have to check that your program works as expected on the "build" environment. 
 
-The system architecture can be tricky: you may choose between 32 bit and 64 bit versions of the target Python. However, if you are running a 32 bit Windows and you choose a 64 bit target Python, then WinPackIt won't be able to run the target Python on your machine, to install dependencies and compile ``.pyc`` files. Even so, it may still work, if you need no external package and you can live without compiling pycs. 
+If you choose a 64 bit target Python, keep in mind that of course your application will not run on users' 32 bit Windows machines. 
 
-Symmetrically, if you choose a 64 bit target Python, keep in mind that of course your application will not run on users' 32 bit Windows machines. 
+Linux/Mac/Windows-32bit users.
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Linux/Mac users.
-^^^^^^^^^^^^^^^^
+The WinPackIt script runs on Linux/Mac too, of course. Except, the build process needs to run the target Python a few times in order to install external packages and compile ``.pyc`` files - and *that* will be impossible on Linux. Of course, if you need no external packages nor compiling, it should work as a charm. 
 
-The WinPackIt script runs on Linux too, of course. Except, the build process needs to run the target Python a few times in order to install external packages and compile ``.pyc`` files - and *that* will be impossible on Linux. Then again, if you need no external packages nor compiling, it should work as a charm. 
+But even if you are on Windows, the system architecture can trick you: you may choose between 32 bit and 64 bit versions of the target Python. However, if you are running a 32 bit Windows and you choose a 64 bit target Python, then WinPackIt won't be able to run the target Python on your machine, to install dependencies and compile ``.pyc`` files. Then again, it may still work, if you need no external package and you can live without compiling pycs. 
 
-At some point, I plan to add code to support running the target Python on the *target* machine only. This should make some sort of cross-building possible, both across Windows/Linux and across 32/64 bit architectures. 
+On the other hand, if you *do* need to install dependencies and/or compiling pycs, then you may set the ``DELAYED_INSTALL`` option (see below): that is, you leave instructions to run the target Python at "install time" only, on the target user machine. This way you can make full use of WinPackIt even on a Linux/Mac box (or, you can produce a 64 bit distribution even on a 32 bit Windows box). 
 
-Even so, you might be able to produce a Windows distribution on your Linux box, but you will have no way to run and test it. 
+However, keep in mind that while you can produce a WinPackIt distribution on your Linux box, still you will have no way to run and test it. 
 
 A note on Tkinter.
 ^^^^^^^^^^^^^^^^^^
@@ -125,6 +125,15 @@ This will be the *target* Python version (i.e., that of your distribution). Leav
 An invalid (or blank) value will default to your current Python version. If your Python doesn't match any available embeddable distribution, ``PYTHON_VERSION`` will default to ``3.5``. Remember that no embeddable Python distribution is available prior to ``3.5.0`` version. 
 
 **Note**: also, there is no embeddable distribution available for security fix-only versions ``3.5.5+`` and ``3.6.9+``. 
+
+``DELAYED_INSTALL``
+^^^^^^^^^^^^^^^^^^^
+
+If set, make a "delayed install" on the target machine. WinPackIt won't install external dependencies nor compile ``.pyc`` files in your "build" directory: instead, it will leave instructions to execute this part of the installation process on the target (user) machine only. This way, the target Python will never need to be run by WinPackIt on your own machine. 
+
+Set this option if you are on Linux/Mac, since the target Python (Windows) executable just won't work on your machine. Also, set this option if you are on a 32 bit Windows box and you want to make a 64 bit Python distribution. 
+
+If no external dependency nor ``.pyc`` compiling is needed (see the ``PIP_REQUIRED``, ``REQUIREMENTS``, ``DEPENDENCIES`` and ``COMPILE`` options below), then this setting has no effect. 
 
 ``PIP_REQUIRED``
 ^^^^^^^^^^^^^^^^
@@ -209,6 +218,8 @@ If set, WinPackIt will also remove the original ``.py`` files from the distribut
 
 If you set this option, entry point modules will also be compiled and removed. However, WinPackIt will remember the original extension (``.py`` or ``.pyw``) and will associate the compiled module with the intended Python executable. 
 
+If you opted for a "delayed install" (see the ``DELAYED_INSTALL`` option above), then a "pyc-only distribution" will be even weaker than usual. The original ``.py`` files *have* to be included in your distribution in order to be compiled on the target machine: WinPackIt will delete them afterwards, but of course all it takes is for the user to open and inspect your modules *before* hitting the ``install.bat`` batch file to finalize the installation.
+
 ``COPY_DIRS``
 ^^^^^^^^^^^^^
 
@@ -238,6 +249,8 @@ Post-deploy actions.
 If you open the "build" directory, you will find that WinPackIt left a ``winpackit_bootstrap/bootstrap.py`` Python script that is meant to be executed by the user to finalize the "installation" process of your program. This script will be launched by the ``install.bat`` batch file that you can see in the root "build" directory.
 
 The bootstrap script outputs the Windows shortcuts listed in your ``PROJECTS`` and ``COPY_DIRS`` settings (see above). The shortcut files *must* be created on the target machine, their configuration depending on the user file system. 
+
+If you opted for a "delayed install" (see the ``DELAYED_INSTALL`` option above), then the bootstrap script will also download and install the required packages and/or compile the ``.pyc`` files. If something goes wrong here, have the user send you the ``winpackit_bootstrap/install.log`` file for inspection.
 
 You may take the opportunity to add your custom post-deploy actions in the bootstrap module. Just remember that this code will run on the *target* machine, not your own - keep your paths straight. 
 

@@ -719,6 +719,13 @@ USE_CACHE = True
 # See WinPackIt docs for details.
 PYTHON_VERSION = '3'
 
+# Set to `True` to program a "delayed install" on the target machine. 
+# This way, you won't need to run the target Python on your own machine:
+# pip-installing packages and compiling pyc files will occur at "install time". 
+# You need this if you are on Linux/Mac (or if you run a 32 bit Windows but  
+# you want to produce a 64 bit distribution). See WinPackIt docs for details.
+DELAYED_INSTALL = False
+
 # =============================================================================
 # DEPENDENCIES SETTINGS
 # =============================================================================
@@ -809,15 +816,17 @@ if __name__ == '__main__':
     HERE = Path(__file__).parent.resolve()
     os.chdir(str(HERE))
     cfg = namedtuple('cfg', ['HERE', 'VERBOSE', 'USE_CACHE', 'PYTHON_VERSION', 
-                             'PIP_REQUIRED', 'REQUIREMENTS', 'DEPENDENCIES', 
-                             'PIP_CACHE', 'PIP_ARGS', 'PIP_INSTALL_ARGS',
-                             'PROJECTS', 'PROJECT_FILES_IGNORE_PATTERNS',
-                             'COMPILE', 'PYC_ONLY_DISTRIBUTION', 'COPY_DIRS',
+                             'DELAYED_INSTALL', 'PIP_REQUIRED', 'REQUIREMENTS', 
+                             'DEPENDENCIES', 'PIP_CACHE', 'PIP_ARGS', 
+                             'PIP_INSTALL_ARGS', 'PROJECTS', 
+                             'PROJECT_FILES_IGNORE_PATTERNS', 'COMPILE', 
+                             'PYC_ONLY_DISTRIBUTION', 'COPY_DIRS',
                              'custom_action'])
-    pack_settings = cfg(HERE, VERBOSE, USE_CACHE, PYTHON_VERSION, PIP_REQUIRED, 
-                        REQUIREMENTS, DEPENDENCIES, PIP_CACHE, PIP_ARGS, 
-                        PIP_INSTALL_ARGS, PROJECTS, PROJECT_FILES_IGNORE_PATTERNS,
-                        COMPILE, PYC_ONLY_DISTRIBUTION, COPY_DIRS, custom_action)
+    pack_settings = cfg(HERE, VERBOSE, USE_CACHE, PYTHON_VERSION, 
+                        DELAYED_INSTALL, PIP_REQUIRED, REQUIREMENTS, 
+                        DEPENDENCIES, PIP_CACHE, PIP_ARGS, PIP_INSTALL_ARGS, 
+                        PROJECTS, PROJECT_FILES_IGNORE_PATTERNS, COMPILE, 
+                        PYC_ONLY_DISTRIBUTION, COPY_DIRS, custom_action)
     Packit(settings=pack_settings).main()
 
 """

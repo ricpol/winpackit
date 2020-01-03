@@ -13,6 +13,7 @@ class _Cfg:
         self.HERE = Path(__file__).resolve().parent
         self.PROJECTS = []
         self.PYTHON_VERSION = '3'
+        self.DELAYED_INSTALL = False
         self.PIP_REQUIRED = False
         self.DEPENDENCIES = []
         self.REQUIREMENTS = ''
