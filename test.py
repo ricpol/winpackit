@@ -28,7 +28,7 @@ class _Cfg:
         self.VERBOSE = 2
         self.custom_action = lambda i: True
 
-
+@unittest.skip
 class BasicTestCase(unittest.TestCase):
     def setUp(self):
         self.cfg = _Cfg()
@@ -108,7 +108,7 @@ class BaseBuildTestCase(unittest.TestCase):
             pprint(self.cfg.__dict__, stream=f)
         return ret
 
-
+@unittest.skip
 class BuildTestCase(BaseBuildTestCase):
     # builds various example projects
 
@@ -183,7 +183,7 @@ class BuildTestCase(BaseBuildTestCase):
         ret = self.start(buildir)
         self.assertTrue(all(ret))
 
-
+@unittest.skip
 class FailBuildTestCase(BaseBuildTestCase):
     # test various failures
 
@@ -231,7 +231,7 @@ class FailBuildTestCase(BaseBuildTestCase):
         ret = self.start(buildir)
         self.assertEqual(ret, [True, True, True, True, True, True, False, True, True])
 
-
+@unittest.skip
 class BuildTestCase1(BaseBuildTestCase):
     # builds the same project with various Python version
     def setUp(self):
@@ -294,6 +294,21 @@ class BuildTestCase1(BaseBuildTestCase):
     def test_build_py38064(self):
         self.cfg.PYTHON_VERSION = '3.8.0'
         buildir = Path('BuildTestCase1_build_py38064')
+        ret = self.start(buildir)
+        self.assertTrue(all(ret))
+
+
+class DelayedBuildTestCase(BaseBuildTestCase):
+    # a few "delayed build" tests
+    def setUp(self):
+        super().setUp()
+        self.cfg.DELAYED_INSTALL = True
+    
+    def test_delay1(self): # this installs a delayed Pip
+        self.cfg.PIP_REQUIRED = True
+        self.cfg.PROJECTS = [['examples/project0', ('main.py', 'main'), 
+                                                   ('readme.txt', 'readme')]]
+        buildir = Path('DelayedBuildTestCase_build1')
         ret = self.start(buildir)
         self.assertTrue(all(ret))
 

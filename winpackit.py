@@ -139,6 +139,18 @@ PY_DIR = (HERE / '..' / '{pydirname}').resolve()
 ENTRY_POINTS = {entrypoints}
 BUILD_DIR = HERE.parent.resolve()
 PYC_ONLY = {pyc_only}
+HAVE_PIP = {have_pip} # Pip "delayed install"
+
+def install_pip():
+    if not HAVE_PIP:
+        return
+    pyexec = str(PY_DIR / 'python.exe')
+    with open('install.log', 'a') as f:
+        f.write('*** install pip ***\\n')
+        f.flush()
+        subprocess.run([pyexec, 'get-pip.py', '--no-cache'], 
+                       stdout=f, stderr=subprocess.STDOUT)
+        f.write('*******************\\n\\n')
 
 def make_shortcut():
     if not ENTRY_POINTS:
@@ -179,6 +191,7 @@ def post_deploy_action():
     pass
 
 if __name__ == '__main__':
+    install_pip()
     make_shortcut()
     post_deploy_action()
     print('\\n\\n')
@@ -205,12 +218,15 @@ class Packit:
         # target ("build") configuration, to be figured out later:
         timestr = time.strftime('%Y%m%d_%H%M%S')
         self.build_dir = self.cfg.HERE / f'winpackit_build_{timestr}'
+        self.bootstrap_dir = None # "service" dir for bootstrap script
         self.target_py_version = None # Python version
         self.target_py_dir = None # Python root directory
         self.pip_is_present = False # if Pip is currently installed
         self.target_proj_dirs = None # project dir(s)
         self.target_copy_dirs = None # other non-project dir(s)
         self.entry_points = None # entry points (to both "projects" and "copy")
+        # options to delay installing things on target:
+        self.delay_have_pip = False
         if self.cfg.PIP_CACHE:
             self.cfg.PIP_ARGS.append(f'--cache-dir={self.cache_dir}')
         else:
@@ -455,16 +471,9 @@ class Packit:
         _ = customizepath.write_text(customizetxt)
         return True
 
-    def install_pip(self, getpipfile):
+    def _install_pip_now(self, getpipfile):
         """Use Get-pip to install Pip. Return False if something went wrong.
         Also, set self.pip_is_present if Pip was successfully installed."""
-        self.msg(LOG_VERBOSE, "\n****** Installing Pip ******")
-        if not self.cfg.PIP_REQUIRED:
-            self.msg(LOG_VERBOSE, 'Skipped: no Pip required in config file.')
-            return True
-        if not getpipfile:
-            self.msg(LOG_VERBOSE, 'ERROR: no Get-pip present.')
-            return False
         pyexec = self.target_py_dir / 'python.exe'
         args = str(pyexec), str(getpipfile), *self.cfg.PIP_ARGS
         if self.run_subprocess(*args):
@@ -473,7 +482,31 @@ class Packit:
             self.pip_is_present = True
             return True
         return False
-        
+    
+    def _install_pip_delayed(self, getpipfile):
+        """Install Pip in the 'delayed install' scenario: copy Get-pip into 
+        the distribution folder, then leave a post-deploy instruction."""
+        dest = self.bootstrap_dir / 'get-pip.py'
+        shutil.copy(getpipfile, dest)
+        self.delay_have_pip = True
+        self.msg(LOG_VERBOSE, 'Pip will be installed on the user machine.')
+        return True
+
+    def install_pip(self, getpipfile):
+        """Install Pip. Return False if something went wrong.
+        Also, set self.pip_is_present if Pip was successfully installed."""
+        self.msg(LOG_VERBOSE, "\n****** Installing Pip ******")
+        if not self.cfg.PIP_REQUIRED:
+            self.msg(LOG_VERBOSE, 'Skipped: no Pip required in config file.')
+            return True
+        if not getpipfile:
+            self.msg(LOG_VERBOSE, 'ERROR: no Get-pip present.')
+            return False
+        if self.cfg.DELAYED_INSTALL:
+            return self._install_pip_delayed(getpipfile)
+        else:
+            return self._install_pip_now(getpipfile)
+
     def install_dependencies(self):
         """Install dependencies. Return False if something went wrong."""
         self.msg(LOG_VERBOSE, "\n****** Installing dependencies ******")
@@ -617,7 +650,8 @@ class Packit:
         script = BOOTSTRAP_PY_SCRIPT.format(
                                         pydirname=self.target_py_dir.name,
                                         entrypoints=str(entrypoints),
-                                        pyc_only=self.cfg.PYC_ONLY_DISTRIBUTION)
+                                        pyc_only=self.cfg.PYC_ONLY_DISTRIBUTION, 
+                                        have_pip=str(self.delay_have_pip))
         with open(self.bootstrap_dir / 'bootstrap.py', 'a') as f:
             f.write(script)
         txt = f'"./{self.target_py_dir.name}/python.exe"'
@@ -648,6 +682,9 @@ class Packit:
         self.msg(LOG_VERBOSE, '\n****** Running a final "pip freeze" ******')
         if not self.cfg.PIP_REQUIRED:
             self.msg(LOG_VERBOSE, 'Skipped: no Pip required in config file.')
+            return True
+        if self.cfg.DELAYED_INSTALL:
+            self.msg(LOG_VERBOSE, 'Skipped: no Pip present (delayed install).')
             return True
         if not self.pip_is_present:
             self.msg(LOG_VERBOSE, "ERROR: no Pip present.")
