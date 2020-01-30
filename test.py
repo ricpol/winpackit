@@ -312,6 +312,33 @@ class DelayedBuildTestCase(BaseBuildTestCase):
         ret = self.start(buildir)
         self.assertTrue(all(ret))
 
+    def test_delay2(self): # this installs delayed dependencies from a req file
+        self.cfg.PIP_REQUIRED = True
+        self.cfg.PROJECTS = [['examples/project4', ('main.py', 'main'), 
+                                                   ('readme.txt', 'readme')]]
+        self.cfg.REQUIREMENTS = 'examples/project4/requirements_small.txt'
+        buildir = Path('DelayedBuildTestCase_build2')
+        ret = self.start(buildir)
+        self.assertTrue(all(ret))
+
+    def test_delay3(self): # this installs delayed dependencies from a list
+        self.cfg.PIP_REQUIRED = True
+        self.cfg.PROJECTS = [['examples/project4', ('main.py', 'main'), 
+                                                   ('readme.txt', 'readme')]]
+        self.cfg.DEPENDENCIES = ['arrow']
+        buildir = Path('DelayedBuildTestCase_build3')
+        ret = self.start(buildir)
+        self.assertTrue(all(ret))
+
+    def test_delay4(self): # this installs delayed dependencies from both
+        self.cfg.PIP_REQUIRED = True
+        self.cfg.PROJECTS = [['examples/project4', ('main.py', 'main'), 
+                                                   ('readme.txt', 'readme')]]
+        self.cfg.DEPENDENCIES = ['arrow']
+        self.cfg.REQUIREMENTS = 'examples/project4/requirements_small.txt'
+        buildir = Path('DelayedBuildTestCase_build4')
+        ret = self.start(buildir)
+        self.assertTrue(all(ret))
 
 if __name__ == '__main__':
     unittest.main()

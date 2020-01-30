@@ -140,6 +140,19 @@ ENTRY_POINTS = {entrypoints}
 BUILD_DIR = HERE.parent.resolve()
 PYC_ONLY = {pyc_only}
 HAVE_PIP = {have_pip} # Pip "delayed install"
+HAVE_DEPS = {have_deps} # dependencies "delayed install"
+
+def install_dependencies():
+    if not HAVE_DEPS:
+        return
+    pyexec = str(PY_DIR / 'python.exe')
+    with open('install.log', 'a') as f:
+        f.write('*** install dependencies ***\\n')
+        f.flush()
+        subprocess.run([pyexec, '-m', 'pip', 'install', 
+                        '-r', 'requirements.txt', '--no-cache'], 
+                       stdout=f, stderr=subprocess.STDOUT)
+        f.write('*******************\\n\\n')
 
 def install_pip():
     if not HAVE_PIP:
@@ -192,6 +205,7 @@ def post_deploy_action():
 
 if __name__ == '__main__':
     install_pip()
+    install_dependencies()
     make_shortcut()
     post_deploy_action()
     print('\\n\\n')
@@ -227,6 +241,7 @@ class Packit:
         self.entry_points = None # entry points (to both "projects" and "copy")
         # options to delay installing things on target:
         self.delay_have_pip = False
+        self.delay_have_dependencies = False
         if self.cfg.PIP_CACHE:
             self.cfg.PIP_ARGS.append(f'--cache-dir={self.cache_dir}')
         else:
@@ -509,17 +524,9 @@ class Packit:
         else:
             return self._install_pip_now(getpipfile)
 
-    def install_dependencies(self):
-        """Install dependencies. Return False if something went wrong."""
-        self.msg(LOG_VERBOSE, "\n****** Installing dependencies ******")
-        want_dependencies = self.cfg.REQUIREMENTS or self.cfg.DEPENDENCIES
-        if not want_dependencies:
-            self.msg(LOG_VERBOSE, 'Skipped: no dependency wanted.')
-            return True
-        if not self.pip_is_present:
-            self.msg(LOG_VERBOSE, 
-                     "ERROR: can't install dependencies, no Pip present.")
-            return False
+    def _install_dependencies_now(self):
+        """Uses pip to install dependencies. 
+        Return False if something went wrong."""
         pyexec = self.target_py_dir / 'python.exe'
         return_codes = []
         if self.cfg.REQUIREMENTS:
@@ -547,7 +554,37 @@ class Packit:
             self.msg(LOG_VERBOSE, 
                      'ERROR: not all dependencies successfully installed.')
             return False
-    
+
+    def _install_dependencies_delayed(self):
+        """Install dependencies in the 'delayed install' scenario: leave a
+        requirements.txt in the dist folder and post-deploy instructions."""
+        dest = self.bootstrap_dir / 'requirements.txt'
+        if self.cfg.REQUIREMENTS:
+            shutil.copy(self.cfg.REQUIREMENTS, dest)
+        with open(dest, 'a') as f:
+            for req in self.cfg.DEPENDENCIES:
+                f.write(req+'\n')
+        self.delay_have_dependencies = True
+        self.msg(LOG_VERBOSE, 
+                 'Dependencies will be installed on the user machine.')
+        return True
+
+    def install_dependencies(self):
+        """Install dependencies. Return False if something went wrong."""
+        self.msg(LOG_VERBOSE, "\n****** Installing dependencies ******")
+        want_dependencies = self.cfg.REQUIREMENTS or self.cfg.DEPENDENCIES
+        if not want_dependencies:
+            self.msg(LOG_VERBOSE, 'Skipped: no dependency wanted.')
+            return True
+        if not self.pip_is_present:
+            self.msg(LOG_VERBOSE, 
+                     "ERROR: can't install dependencies, no Pip present.")
+            return False
+        if self.cfg.DELAYED_INSTALL:
+            return self._install_dependencies_delayed()
+        else:
+            return self._install_dependencies_now()
+
     def _copy_files(self, orig, dest, ignore=None):
         """Run shutil.copytree, return False if errors occurred."""
         try:
@@ -650,10 +687,11 @@ class Packit:
                 got_errors = True
         entrypoints = [[str(p), n, f] for p, n, f in self.entry_points]
         script = BOOTSTRAP_PY_SCRIPT.format(
-                                        pydirname=self.target_py_dir.name,
-                                        entrypoints=str(entrypoints),
-                                        pyc_only=self.cfg.PYC_ONLY_DISTRIBUTION, 
-                                        have_pip=str(self.delay_have_pip))
+                                    pydirname=self.target_py_dir.name,
+                                    entrypoints=str(entrypoints),
+                                    pyc_only=self.cfg.PYC_ONLY_DISTRIBUTION, 
+                                    have_pip=str(self.delay_have_pip),
+                                    have_deps=str(self.delay_have_dependencies))
         with open(self.bootstrap_dir / 'bootstrap.py', 'a') as f:
             f.write(script)
         txt = f'"./{self.target_py_dir.name}/python.exe"'

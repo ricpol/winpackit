@@ -1,0 +1,2 @@
+# a smaller list of requirements, to save up time
+requests>2
