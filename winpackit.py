@@ -485,10 +485,12 @@ class Packit:
     
     def _install_pip_delayed(self, getpipfile):
         """Install Pip in the 'delayed install' scenario: copy Get-pip into 
-        the distribution folder, then leave a post-deploy instruction."""
+        the distribution folder, then leave a post-deploy instruction.
+        Also, set self.pip_is_present."""
         dest = self.bootstrap_dir / 'get-pip.py'
         shutil.copy(getpipfile, dest)
         self.delay_have_pip = True
+        self.pip_is_present = True
         self.msg(LOG_VERBOSE, 'Pip will be installed on the user machine.')
         return True
 
