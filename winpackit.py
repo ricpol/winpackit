@@ -136,11 +136,31 @@ from pathlib import Path
 HERE = Path(__file__).parent.resolve()
 os.chdir(str(HERE))
 PY_DIR = (HERE / '..' / '{pydirname}').resolve()
+PROJECY_DIRS = {proj_dirs}
 ENTRY_POINTS = {entrypoints}
 BUILD_DIR = HERE.parent.resolve()
 PYC_ONLY = {pyc_only}
+COMPILE_PYCS = {compile_pycs} # compile py to pyc "delayed install"
 HAVE_PIP = {have_pip} # Pip "delayed install"
 HAVE_DEPS = {have_deps} # dependencies "delayed install"
+
+def compile_pycs():
+    if not COMPILE_PYCS:
+        return
+    pyexec = str(PY_DIR / 'python.exe')
+    with open('install.log', 'a') as f:
+        f.write('*** compile py modules ***\\n')
+        f.flush()
+        for d in PROJECY_DIRS:
+            d = Path(HERE.parent / d).resolve()
+            args = [pyexec, '-m', 'compileall', str(d)]
+            if PYC_ONLY:
+                args.append('-b')
+            subprocess.run(args, stdout=f, stderr=subprocess.STDOUT)
+            if PYC_ONLY:
+                for py in d.glob('**/*.py'):
+                    py.unlink()
+        f.write('*******************\\n\\n')
 
 def install_dependencies():
     if not HAVE_DEPS:
@@ -206,6 +226,7 @@ def post_deploy_action():
 if __name__ == '__main__':
     install_pip()
     install_dependencies()
+    compile_pycs()
     make_shortcut()
     post_deploy_action()
     print('\\n\\n')
@@ -237,11 +258,13 @@ class Packit:
         self.target_py_dir = None # Python root directory
         self.pip_is_present = False # if Pip is currently installed
         self.target_proj_dirs = None # project dir(s)
+        self.target_proj_dirs_relative = None # id, relative to self.build_dir
         self.target_copy_dirs = None # other non-project dir(s)
         self.entry_points = None # entry points (to both "projects" and "copy")
         # options to delay installing things on target:
         self.delay_have_pip = False
         self.delay_have_dependencies = False
+        self.delay_compile_pycs = False
         if self.cfg.PIP_CACHE:
             self.cfg.PIP_ARGS.append(f'--cache-dir={self.cache_dir}')
         else:
@@ -369,6 +392,7 @@ class Packit:
         self.proj_dirs = []
         self.copy_dirs = []
         self.target_proj_dirs = []
+        self.target_proj_dirs_relative = []
         self.target_copy_dirs = []
         self.entry_points = []
         if self.cfg.PROJECTS:
@@ -377,6 +401,7 @@ class Packit:
                 target_projdir = self.build_dir / proj_dir.name
                 self.proj_dirs.append(proj_dir)
                 self.target_proj_dirs.append(target_projdir)
+                self.target_proj_dirs_relative.append(proj_dir.name)
                 try:
                     self._prepare_entry_points(project[1:], proj_dir)
                 except KeyError: # no entry-point here
@@ -628,27 +653,15 @@ class Packit:
             self.msg(LOG_VERBOSE, 'ERROR: not all projects successfully copied.')
         return no_errors
 
-    def compile_files(self):
+    def _compile_files_delayed(self):
+        """Leave instructions to compile py modules 
+        in the 'delayed install' scenario."""
+        self.delay_compile_pycs = True
+        self.msg(LOG_VERBOSE, 'Modules will be compiled on the user machine.')
+        return True
+
+    def _compile_files_now(self):
         """Compile all py modules, remove originals if needed."""
-        self.msg(LOG_VERBOSE, "\n****** Compiling project modules ******")
-        if not self.target_proj_dirs:
-            self.msg(LOG_VERBOSE, 'Skipped, no projects present.')
-            return True
-        if not self.cfg.COMPILE:
-            self.msg(LOG_VERBOSE, 'Skipped, no compiling required.')
-            return True
-        if self.cfg.PYC_ONLY_DISTRIBUTION:
-            # we must rename '*.pyw' file to '*.py', or they won't be compiled!
-            for n, entrypoint in enumerate(self.entry_points):
-                if entrypoint[2] == 'pyw':
-                    old = self.build_dir / entrypoint[0]
-                    new = old.with_suffix('.py')
-                    os.rename(old, new)
-                if entrypoint[2] != '':
-                    # book-keeping...
-                    self.entry_points[n][0] = self.entry_points[n][0].with_suffix('.pyc')
-            self.msg(LOG_DEBUG, '->Debug - renamed pyc entry_points:',
-                     self.entry_points)
         got_errors = False
         # MUST compile with target python, not our current python!
         py_exec = self.target_py_dir / 'python.exe'
@@ -672,7 +685,39 @@ class Packit:
                 for f in d.glob('**/*.py'):
                     f.unlink()
             self.msg(LOG_VERBOSE, 'Original *.py modules removed.')
+            # we need to point our entrypoint list to the new pyc files, 
+            # since there are no more py files
+            for n, entrypoint in enumerate(self.entry_points):
+                if entrypoint[2] != '':
+                    self.entry_points[n][0] = self.entry_points[n][0].with_suffix('.pyc')
+            self.msg(LOG_DEBUG, '->Debug - renamed (py->pyc) entry-points:', 
+                     self.entry_points)
         return True
+
+    def compile_files(self):
+        """Compile py modules."""
+        self.msg(LOG_VERBOSE, "\n****** Compiling project modules ******")
+        if not self.target_proj_dirs:
+            self.msg(LOG_VERBOSE, 'Skipped, no projects present.')
+            return True
+        if not self.cfg.COMPILE:
+            self.msg(LOG_VERBOSE, 'Skipped, no compiling required.')
+            return True
+        if self.cfg.PYC_ONLY_DISTRIBUTION:
+            # we must rename '*.pyw' file to '*.py', or they won't be compiled!
+            for n, entrypoint in enumerate(self.entry_points):
+                if entrypoint[2] == 'pyw':
+                    old = self.build_dir / entrypoint[0]
+                    new = old.with_suffix('.py')
+                    os.rename(old, new)
+                    # book-keeping...
+                    self.entry_points[n][0] = self.entry_points[n][0].with_suffix('.py')
+            self.msg(LOG_DEBUG, '->Debug - renamed (pyw->py) entry-points:', 
+                     self.entry_points)
+        if self.cfg.DELAYED_INSTALL:
+            return self._compile_files_delayed()
+        else:
+            return self._compile_files_now()
 
     def make_bootstrap(self):
         """Creates bootstrap machinery for the project."""
@@ -684,14 +729,17 @@ class Packit:
         got_errors = False
         for p, n, f in self.entry_points:
             if not (self.build_dir / p).exists():
+                self.msg(LOG_DEBUG, '->Debug - non-existent entrypoint:', p)
                 got_errors = True
         entrypoints = [[str(p), n, f] for p, n, f in self.entry_points]
         script = BOOTSTRAP_PY_SCRIPT.format(
-                                    pydirname=self.target_py_dir.name,
-                                    entrypoints=str(entrypoints),
-                                    pyc_only=self.cfg.PYC_ONLY_DISTRIBUTION, 
-                                    have_pip=str(self.delay_have_pip),
-                                    have_deps=str(self.delay_have_dependencies))
+                                pydirname=self.target_py_dir.name,
+                                proj_dirs=str(self.target_proj_dirs_relative),
+                                entrypoints=str(entrypoints),
+                                pyc_only=self.cfg.PYC_ONLY_DISTRIBUTION,
+                                compile_pycs=str(self.delay_compile_pycs), 
+                                have_pip=str(self.delay_have_pip),
+                                have_deps=str(self.delay_have_dependencies))
         with open(self.bootstrap_dir / 'bootstrap.py', 'a') as f:
             f.write(script)
         txt = f'"./{self.target_py_dir.name}/python.exe"'

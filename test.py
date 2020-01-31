@@ -303,7 +303,7 @@ class DelayedBuildTestCase(BaseBuildTestCase):
     def setUp(self):
         super().setUp()
         self.cfg.DELAYED_INSTALL = True
-    
+
     def test_delay1(self): # this installs a delayed Pip
         self.cfg.PIP_REQUIRED = True
         self.cfg.PROJECTS = [['examples/project0', ('main.py', 'main'), 
@@ -337,6 +337,29 @@ class DelayedBuildTestCase(BaseBuildTestCase):
         self.cfg.DEPENDENCIES = ['arrow']
         self.cfg.REQUIREMENTS = 'examples/project4/requirements_small.txt'
         buildir = Path('DelayedBuildTestCase_build4')
+        ret = self.start(buildir)
+        self.assertTrue(all(ret))
+
+    def test_delay5(self): # this installs with delayed compile pycs
+        self.cfg.COMPILE = True
+        self.cfg.PROJECTS = [['examples/project5/one', ('main.py', 'main_project5')], 
+                             ['examples/project5/two'],
+                             ['examples/project6', ('main.pyw', 'main_project6'), 
+                                                   ('readme.txt', 'readme_project6')]]
+        buildir = Path('DelayedBuildTestCase_build5')
+        ret = self.start(buildir)
+        self.assertTrue(all(ret))
+
+    def test_delay6(self): # this installs a delayed pyc-only distribution
+        self.cfg.COMPILE = True
+        self.cfg.PYC_ONLY_DISTRIBUTION = True
+        self.cfg.PROJECTS = [['examples/project5/one', ('main.py', 'main_project5')], 
+                             ['examples/project5/two'],
+                             ['examples/project6', ('main.pyw', 'main_project6'), 
+                                                   ('readme.txt', 'readme_project6')],
+                             ['examples/project3/code with spaces', 
+                              ('main.py', 'main_project3')]]
+        buildir = Path('DelayedBuildTestCase_build6')
         ret = self.start(buildir)
         self.assertTrue(all(ret))
 
