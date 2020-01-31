@@ -160,7 +160,7 @@ class BuildTestCase(BaseBuildTestCase):
                                                    ('readme.txt', 'readme')]]
         self.cfg.PIP_REQUIRED = True
         self.cfg.PIP_ARGS = ['--no-color']
-        self.cfg.PIP_ISTALL_ARGS = ['--no-compile']
+        self.cfg.PIP_INSTALL_ARGS = ['--no-compile']
         self.cfg.DEPENDENCIES = ['wxpython', 'numpy']
         self.cfg.REQUIREMENTS = 'examples/project4/requirements.txt'
         buildir = Path('BuildTestCase_build4')
