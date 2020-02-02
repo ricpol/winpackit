@@ -55,6 +55,7 @@ import time
 import subprocess
 
 from pathlib import Path
+from hashlib import md5
 from urllib.request import urlretrieve
 
 version = '0.6.0'
@@ -65,64 +66,65 @@ MAX_MINOR_VERSIONS = {3: 8}
 MAX_MAJOR_VERSION = 3          # this won't change for... a while
 MIN_TARGET_VERSION = (3, 5, 0) # this won't change, ever
 
-# download urls for embeddable Pythons
+# download urls, md5 sum for embeddable Pythons
 PY_URL = {
-    (3,8,1,64): 'https://www.python.org/ftp/python/3.8.1/python-3.8.1-embed-amd64.zip',
-    (3,8,1,32): 'https://www.python.org/ftp/python/3.8.1/python-3.8.1-embed-win32.zip',
-    (3,8,0,64): 'https://www.python.org/ftp/python/3.8.0/python-3.8.0-embed-amd64.zip', 
-    (3,8,0,32): 'https://www.python.org/ftp/python/3.8.0/python-3.8.0-embed-win32.zip', 
+    (3,8,1,64): ('https://www.python.org/ftp/python/3.8.1/python-3.8.1-embed-amd64.zip', '4d091857a2153d9406bb5c522b211061'),
+    (3,8,1,32): ('https://www.python.org/ftp/python/3.8.1/python-3.8.1-embed-win32.zip', '980d5745a7e525be5abf4b443a00f734'),
+    (3,8,0,64): ('https://www.python.org/ftp/python/3.8.0/python-3.8.0-embed-amd64.zip', '99cca948512b53fb165084787143ef19'),
+    (3,8,0,32): ('https://www.python.org/ftp/python/3.8.0/python-3.8.0-embed-win32.zip', '2ec3abf05f3f1046e0dbd1ca5c74ce88'),
 
-    (3,7,6,64): 'https://www.python.org/ftp/python/3.7.6/python-3.7.6-embed-amd64.zip',
-    (3,7,6,32): 'https://www.python.org/ftp/python/3.7.6/python-3.7.6-embed-win32.zip',
-    (3,7,5,64): 'https://www.python.org/ftp/python/3.7.5/python-3.7.5-embed-amd64.zip', 
-    (3,7,5,32): 'https://www.python.org/ftp/python/3.7.5/python-3.7.5-embed-win32.zip', 
-    (3,7,4,64): 'https://www.python.org/ftp/python/3.7.4/python-3.7.4-embed-amd64.zip', 
-    (3,7,4,32): 'https://www.python.org/ftp/python/3.7.4/python-3.7.4-embed-win32.zip', 
-    (3,7,3,64): 'https://www.python.org/ftp/python/3.7.3/python-3.7.3-embed-amd64.zip', 
-    (3,7,3,32): 'https://www.python.org/ftp/python/3.7.3/python-3.7.3-embed-win32.zip', 
-    (3,7,2,64): 'https://www.python.org/ftp/python/3.7.2/python-3.7.2.post1-embed-amd64.zip', 
-    (3,7,2,32): 'https://www.python.org/ftp/python/3.7.2/python-3.7.2.post1-embed-win32.zip', 
-    (3,7,1,64): 'https://www.python.org/ftp/python/3.7.1/python-3.7.1-embed-amd64.zip', 
-    (3,7,1,32): 'https://www.python.org/ftp/python/3.7.1/python-3.7.1-embed-win32.zip', 
-    (3,7,0,64): 'https://www.python.org/ftp/python/3.7.0/python-3.7.0-embed-amd64.zip', 
-    (3,7,0,32): 'https://www.python.org/ftp/python/3.7.0/python-3.7.0-embed-win32.zip', 
+    (3,7,6,64): ('https://www.python.org/ftp/python/3.7.6/python-3.7.6-embed-amd64.zip', '5f84f4f62a28d3003679dc693328f8fd'),
+    (3,7,6,32): ('https://www.python.org/ftp/python/3.7.6/python-3.7.6-embed-win32.zip', 'accb8a137871ec632f581943c39cb566'),
+    (3,7,5,64): ('https://www.python.org/ftp/python/3.7.5/python-3.7.5-embed-amd64.zip', '436b0f803d2a0b393590030b1cd59853'),
+    (3,7,5,32): ('https://www.python.org/ftp/python/3.7.5/python-3.7.5-embed-win32.zip', '726877d1a1f5a7dc68f6a4fa48964cd1'),
+    (3,7,4,64): ('https://www.python.org/ftp/python/3.7.4/python-3.7.4-embed-amd64.zip', '9b00c8cf6d9ec0b9abe83184a40729a2'),
+    (3,7,4,32): ('https://www.python.org/ftp/python/3.7.4/python-3.7.4-embed-win32.zip', '9fab3b81f8841879fda94133574139d8'),
+    (3,7,3,64): ('https://www.python.org/ftp/python/3.7.3/python-3.7.3-embed-amd64.zip', '854ac011983b4c799379a3baa3a040ec'),
+    (3,7,3,32): ('https://www.python.org/ftp/python/3.7.3/python-3.7.3-embed-win32.zip', '70df01e7b0c1b7042aabb5a3c1e2fbd5'),
+    (3,7,2,64): ('https://www.python.org/ftp/python/3.7.2/python-3.7.2.post1-embed-amd64.zip', 'f81568590bef56e5997e63b434664d58'),
+    (3,7,2,32): ('https://www.python.org/ftp/python/3.7.2/python-3.7.2.post1-embed-win32.zip', '26881045297dc1883a1d61baffeecaf0'),
+    (3,7,1,64): ('https://www.python.org/ftp/python/3.7.1/python-3.7.1-embed-amd64.zip', '74f919be8add2749e73d2d91eb6d1da5'),
+    (3,7,1,32): ('https://www.python.org/ftp/python/3.7.1/python-3.7.1-embed-win32.zip', 'aa4188ea480a64a3ea87e72e09f4c097'),
+    (3,7,0,64): ('https://www.python.org/ftp/python/3.7.0/python-3.7.0-embed-amd64.zip', 'cb8b4f0d979a36258f73ed541def10a5'),
+    (3,7,0,32): ('https://www.python.org/ftp/python/3.7.0/python-3.7.0-embed-win32.zip', 'ed9a1c028c1e99f5323b9c20723d7d6f'),
 
     # no embeddable package available for 3.6.9/3.6.10
-    (3,6,8,64): 'https://www.python.org/ftp/python/3.6.8/python-3.6.8-embed-amd64.zip', 
-    (3,6,8,32): 'https://www.python.org/ftp/python/3.6.8/python-3.6.8-embed-win32.zip', 
-    (3,6,7,64): 'https://www.python.org/ftp/python/3.6.7/python-3.6.7-embed-amd64.zip', 
-    (3,6,7,32): 'https://www.python.org/ftp/python/3.6.7/python-3.6.7-embed-win32.zip', 
-    (3,6,6,64): 'https://www.python.org/ftp/python/3.6.6/python-3.6.6-embed-amd64.zip', 
-    (3,6,6,32): 'https://www.python.org/ftp/python/3.6.6/python-3.6.6-embed-win32.zip', 
-    (3,6,5,64): 'https://www.python.org/ftp/python/3.6.5/python-3.6.5-embed-amd64.zip', 
-    (3,6,5,32): 'https://www.python.org/ftp/python/3.6.5/python-3.6.5-embed-win32.zip', 
-    (3,6,4,64): 'https://www.python.org/ftp/python/3.6.4/python-3.6.4-embed-amd64.zip', 
-    (3,6,4,32): 'https://www.python.org/ftp/python/3.6.4/python-3.6.4-embed-win32.zip', 
-    (3,6,3,64): 'https://www.python.org/ftp/python/3.6.3/python-3.6.3-embed-amd64.zip', 
-    (3,6,3,32): 'https://www.python.org/ftp/python/3.6.3/python-3.6.3-embed-win32.zip', 
-    (3,6,2,64): 'https://www.python.org/ftp/python/3.6.2/python-3.6.2-embed-amd64.zip', 
-    (3,6,2,32): 'https://www.python.org/ftp/python/3.6.2/python-3.6.2-embed-win32.zip', 
-    (3,6,1,64): 'https://www.python.org/ftp/python/3.6.1/python-3.6.1-embed-amd64.zip', 
-    (3,6,1,32): 'https://www.python.org/ftp/python/3.6.1/python-3.6.1-embed-win32.zip', 
-    (3,6,0,64): 'https://www.python.org/ftp/python/3.6.0/python-3.6.0-embed-amd64.zip', 
-    (3,6,0,32): 'https://www.python.org/ftp/python/3.6.0/python-3.6.0-embed-win32.zip', 
+    (3,6,8,64): ('https://www.python.org/ftp/python/3.6.8/python-3.6.8-embed-amd64.zip', '73df7cb2f1500ff36d7dbeeac3968711'),
+    (3,6,8,32): ('https://www.python.org/ftp/python/3.6.8/python-3.6.8-embed-win32.zip', '60470b4cceba52094121d43cd3f6ce3a'),
+    (3,6,7,64): ('https://www.python.org/ftp/python/3.6.7/python-3.6.7-embed-amd64.zip', '7617e04b9dafc564f680e37c2f2398b8'),
+    (3,6,7,32): ('https://www.python.org/ftp/python/3.6.7/python-3.6.7-embed-win32.zip', 'a993744c9daa6d159712c8a35374ca9c'),
+    (3,6,6,64): ('https://www.python.org/ftp/python/3.6.6/python-3.6.6-embed-amd64.zip', '7148ec14edfdc13f42e06a14d617c921'),
+    (3,6,6,32): ('https://www.python.org/ftp/python/3.6.6/python-3.6.6-embed-win32.zip', 'b4c424de065bad238c71359f3cd71ef2'),
+    (3,6,5,64): ('https://www.python.org/ftp/python/3.6.5/python-3.6.5-embed-amd64.zip', '04cc4f6f6a14ba74f6ae1a8b685ec471'),
+    (3,6,5,32): ('https://www.python.org/ftp/python/3.6.5/python-3.6.5-embed-win32.zip', 'b0b099a4fa479fb37880c15f2b2f4f34'),
+    (3,6,4,64): ('https://www.python.org/ftp/python/3.6.4/python-3.6.4-embed-amd64.zip', 'd2fb546fd4b189146dbefeba85e7266b'),
+    (3,6,4,32): ('https://www.python.org/ftp/python/3.6.4/python-3.6.4-embed-win32.zip', '15802be75a6246070d85b87b3f43f83f'),
+    (3,6,3,64): ('https://www.python.org/ftp/python/3.6.3/python-3.6.3-embed-amd64.zip', 'b1daa2a41589d7504117991104b96fe5'),
+    (3,6,3,32): ('https://www.python.org/ftp/python/3.6.3/python-3.6.3-embed-win32.zip', 'cf1c75ad7ccf9dec57ba7269198fd56b'),
+    (3,6,2,64): ('https://www.python.org/ftp/python/3.6.2/python-3.6.2-embed-amd64.zip', '0fdfe9f79e0991815d6fc1712871c17f'),
+    (3,6,2,32): ('https://www.python.org/ftp/python/3.6.2/python-3.6.2-embed-win32.zip', '2ca4768fdbadf6e670e97857bfab83e8'),
+    (3,6,1,64): ('https://www.python.org/ftp/python/3.6.1/python-3.6.1-embed-amd64.zip', '708496ebbe9a730d19d5d288afd216f1'),
+    (3,6,1,32): ('https://www.python.org/ftp/python/3.6.1/python-3.6.1-embed-win32.zip', '8dff09a1b19b7a7dcb915765328484cf'),
+    (3,6,0,64): ('https://www.python.org/ftp/python/3.6.0/python-3.6.0-embed-amd64.zip', '0ec0caeea75bae5d2771cf619917c71f'),
+    (3,6,0,32): ('https://www.python.org/ftp/python/3.6.0/python-3.6.0-embed-win32.zip', '1adf2fb735c5000af32d42c39136727c'),
 
     # no embeddable package available for 3.5.5/3.5.9
-    (3,5,4,64): 'https://www.python.org/ftp/python/3.5.4/python-3.5.4-embed-amd64.zip', 
-    (3,5,4,32): 'https://www.python.org/ftp/python/3.5.4/python-3.5.4-embed-win32.zip', 
-    (3,5,3,64): 'https://www.python.org/ftp/python/3.5.3/python-3.5.3-embed-amd64.zip', 
-    (3,5,3,32): 'https://www.python.org/ftp/python/3.5.3/python-3.5.3-embed-win32.zip', 
-    (3,5,2,64): 'https://www.python.org/ftp/python/3.5.2/python-3.5.2-embed-amd64.zip', 
-    (3,5,2,32): 'https://www.python.org/ftp/python/3.5.2/python-3.5.2-embed-win32.zip', 
-    (3,5,1,64): 'https://www.python.org/ftp/python/3.5.1/python-3.5.1-embed-amd64.zip', 
-    (3,5,1,32): 'https://www.python.org/ftp/python/3.5.1/python-3.5.1-embed-win32.zip', 
-    (3,5,0,64): 'https://www.python.org/ftp/python/3.5.0/python-3.5.0-embed-amd64.zip', 
-    (3,5,0,32): 'https://www.python.org/ftp/python/3.5.0/python-3.5.0-embed-win32.zip', 
+    (3,5,4,64): ('https://www.python.org/ftp/python/3.5.4/python-3.5.4-embed-amd64.zip', '1b56c67f3c849446794a15189f425f53'),
+    (3,5,4,32): ('https://www.python.org/ftp/python/3.5.4/python-3.5.4-embed-win32.zip', '3ce7b067ddd9a91bb221351d9370ebe9'),
+    (3,5,3,64): ('https://www.python.org/ftp/python/3.5.3/python-3.5.3-embed-amd64.zip', '1264131c4c2f3f935f34c455bceedee1'),
+    (3,5,3,32): ('https://www.python.org/ftp/python/3.5.3/python-3.5.3-embed-win32.zip', '7dbd6043bd041ed3db738ad90b6d697f'),
+    (3,5,2,64): ('https://www.python.org/ftp/python/3.5.2/python-3.5.2-embed-amd64.zip', 'f1c24bb78bd6dd792a73d5ebfbd3b20e'),
+    (3,5,2,32): ('https://www.python.org/ftp/python/3.5.2/python-3.5.2-embed-win32.zip', 'ad637a1db7cf91e344318d55c94ad3ca'),
+    (3,5,1,64): ('https://www.python.org/ftp/python/3.5.1/python-3.5.1-embed-amd64.zip', 'b07d15f515882452684e0551decad242'),
+    (3,5,1,32): ('https://www.python.org/ftp/python/3.5.1/python-3.5.1-embed-win32.zip', '6e783d8fd44570315d488b9a9881ff10'),
+    (3,5,0,64): ('https://www.python.org/ftp/python/3.5.0/python-3.5.0-embed-amd64.zip', '09a9bcabcbf8c616c21b1e5a6eaa9129'),
+    (3,5,0,32): ('https://www.python.org/ftp/python/3.5.0/python-3.5.0-embed-win32.zip', '6701f6eba0697949bc9031e887e27b32'),
     # and that's it - no embeddable zip file before 3.5!
     }
 
-# download url for Get-pip
-GETPIP_URL = 'https://bootstrap.pypa.io/get-pip.py'
+# download url, md5 sum for Get-pip
+# (note: afaik there is no official, published md5 checksum for Get-pip)
+GETPIP_URL = ('https://bootstrap.pypa.io/get-pip.py', '')
 
 # users will run this script on their own pc to finalize installation 
 BOOTSTRAP_PY_SCRIPT = """\
@@ -239,6 +241,17 @@ LOG_ALWAYS = 0
 LOG_VERBOSE = 1
 LOG_DEBUG = 2
 
+def _md5compare(filepath, md5hash=''):
+    if not md5hash:
+        return True
+    with open(filepath,'rb') as fp:
+        h = md5()
+        buffer = fp.read(4096)
+        while len(buffer) > 0:
+            h.update(buffer)
+            buffer = fp.read(4096)
+    return h.hexdigest() == md5hash
+
 class Packit:
     def __init__(self, settings):
         # "settings": in normal usage, a namedtuple used by the runner script
@@ -289,9 +302,11 @@ class Packit:
         self.msg(LOG_DEBUG, '->Debug - ret.args:', ret.args)
         return True
 
-    def getfile(self, fileurl, on_error_abort=False):
+    def getfile(self, fileurl, checksum='', on_error_abort=False):
         """Download fileurl into self.cache_dir. 
-        Return downloaded filepath, or empty string on failed download. 
+        Return downloaded filepath, or empty string on failed download or 
+        failed md5 checksum verification. If checksum=None, no verification 
+        will occur. 
         If on_error_abort=True, on failed download exit with stacktrace.""" 
         filename = fileurl.split('/')[-1]
         target_filepath = self.cache_dir / filename
@@ -315,6 +330,14 @@ class Packit:
                 self.msg(LOG_VERBOSE, 'The following exception was raised:')
                 self.msg(LOG_VERBOSE, e.__class__.__name__, e.args)
                 return ''
+        if not _md5compare(target_filepath, checksum):
+            new = target_filepath.with_name(f'XXX_BADMD5_{filename}')
+            target_filepath.rename(new)
+            if on_error_abort:
+                self.msg(LOG_ALWAYS, f'FATAL: bad md5 checksum for {filename}!')
+                sys.exit(1)
+            self.msg(LOG_VERBOSE, f'ERROR: bad md5 checksum for {filename}!')
+            return ''
         self.msg(LOG_DEBUG, '->Debug - target_filepath:', target_filepath)
         return target_filepath
 
@@ -435,8 +458,8 @@ class Packit:
     def obtain_python(self):
         """Download Python, return filepath. If fail, exit with stacktrace."""
         self.msg(LOG_VERBOSE, "\n****** Obtaining Python ******")
-        pyfile = PY_URL[self.parse_pyversion()]
-        f = self.getfile(pyfile, on_error_abort=True)
+        pyfile, checksum = PY_URL[self.parse_pyversion()]
+        f = self.getfile(pyfile, checksum=checksum, on_error_abort=True)
         self.msg(LOG_VERBOSE, 'Python successfully obtained.')
         return f
 
@@ -446,12 +469,13 @@ class Packit:
         if not self.cfg.PIP_REQUIRED:
             self.msg(LOG_VERBOSE, 'Skipped: no Pip required in config file.')
             return ''
-        f = self.getfile(GETPIP_URL, on_error_abort=False)
-        if f:
+        f, checksum = GETPIP_URL
+        getpip = self.getfile(f, checksum=checksum, on_error_abort=False)
+        if getpip:
             self.msg(LOG_VERBOSE, 'Get-pip successfully obtained.')
         else:
             self.msg(LOG_VERBOSE, 'ERROR: Get-pip not obtained.')
-        return f
+        return getpip
 
     def unpack_python(self, pyfile):
         """Unzip Python package. If fail, exit with stacktrace."""

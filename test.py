@@ -28,7 +28,7 @@ class _Cfg:
         self.VERBOSE = 2
         self.custom_action = lambda i: True
 
-@unittest.skip
+
 class BasicTestCase(unittest.TestCase):
     def setUp(self):
         self.cfg = _Cfg()
@@ -88,6 +88,11 @@ class BasicTestCase(unittest.TestCase):
         self.cfg.USE_CACHE = True
         self.assertEqual(self.packit.getfile('bogus/dir/testfile'), testpath)
 
+    @unittest.skip('this will download and check *all* the pythons...')
+    def test_get_pythons(self):
+        for url, checksum in PY_URL.values():
+            self.assertTrue(self.packit.getfile(url, checksum))
+
 
 class BaseBuildTestCase(unittest.TestCase):
     def setUp(self):
@@ -102,13 +107,15 @@ class BaseBuildTestCase(unittest.TestCase):
         self.packit = Packit(settings=self.cfg)
         self.packit.cache_dir = self.basedir / 'test_cachedir'
         self.packit.build_dir = self.basedir / buildir
-        ret = self.packit.main()
+        # skip md5 check to save time
+        with mock.patch('winpackit._md5compare', lambda i, j: True):
+            ret = self.packit.main()
         with open((self.packit.build_dir / '_testconfig.txt'), 'a') as f:
             f.write('This test build was made from this configuration:\n\n')
             pprint(self.cfg.__dict__, stream=f)
         return ret
 
-@unittest.skip
+
 class BuildTestCase(BaseBuildTestCase):
     # builds various example projects
 
@@ -183,7 +190,7 @@ class BuildTestCase(BaseBuildTestCase):
         ret = self.start(buildir)
         self.assertTrue(all(ret))
 
-@unittest.skip
+
 class FailBuildTestCase(BaseBuildTestCase):
     # test various failures
 
@@ -231,7 +238,7 @@ class FailBuildTestCase(BaseBuildTestCase):
         ret = self.start(buildir)
         self.assertEqual(ret, [True, True, True, True, True, True, False, True, True])
 
-@unittest.skip
+
 class BuildTestCase1(BaseBuildTestCase):
     # builds the same project with various Python version
     def setUp(self):
