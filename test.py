@@ -26,6 +26,8 @@ class _Cfg:
         self.COPY_DIRS = []
         self.USE_CACHE = True
         self.VERBOSE = 2
+        self.WELCOME_MESSAGE = 'starting...'
+        self.GOODBYE_MESSAGE = "done, press enter to quit"
         self.custom_action = lambda i: True
 
 

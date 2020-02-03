@@ -145,6 +145,8 @@ PYC_ONLY = {pyc_only}
 COMPILE_PYCS = {compile_pycs} # compile py to pyc "delayed install"
 HAVE_PIP = {have_pip} # Pip "delayed install"
 HAVE_DEPS = {have_deps} # dependencies "delayed install"
+WELCOME_MESSAGE = {welcome}
+GOODBYE_MESSAGE = {goodbye}
 
 def compile_pycs():
     if not COMPILE_PYCS:
@@ -226,13 +228,13 @@ def post_deploy_action():
     pass
 
 if __name__ == '__main__':
+    print(WELCOME_MESSAGE)
     install_pip()
     install_dependencies()
     compile_pycs()
     make_shortcut()
     post_deploy_action()
-    print('\\n\\n')
-    input('Done.\\nPress <enter> to quit.')
+    input(GOODBYE_MESSAGE)
 
 """
 
@@ -763,7 +765,9 @@ class Packit:
                                 pyc_only=self.cfg.PYC_ONLY_DISTRIBUTION,
                                 compile_pycs=str(self.delay_compile_pycs), 
                                 have_pip=str(self.delay_have_pip),
-                                have_deps=str(self.delay_have_dependencies))
+                                have_deps=str(self.delay_have_dependencies),
+                                welcome=repr(self.cfg.WELCOME_MESSAGE),
+                                goodbye=repr(self.cfg.GOODBYE_MESSAGE))
         with open(self.bootstrap_dir / 'bootstrap.py', 'a') as f:
             f.write(script)
         txt = f'"./{self.target_py_dir.name}/python.exe"'
@@ -945,6 +949,14 @@ COPY_DIRS = []
 # =============================================================================
 # =============================================================================
 
+# Welcome message to be shown to the user.
+WELCOME_MESSAGE = '\nInstalling project... Please wait...\n\n'
+
+# Final message to be shown to the user.
+# This will be printed as "input(GOODBYE_MESSAGE)" to keep the console open.
+# You should include "press ENTER to exit" here.
+GOODBYE_MESSAGE = 'Done.\nPress ENTER to exit.'
+
 # Insert here your custom code. 
 # This function will be called at the very end of the packaging process;
 # the only argument passed `packit_instance` is a reference to the working 
@@ -970,12 +982,14 @@ if __name__ == '__main__':
                              'PIP_INSTALL_ARGS', 'PROJECTS', 
                              'PROJECT_FILES_IGNORE_PATTERNS', 'COMPILE', 
                              'PYC_ONLY_DISTRIBUTION', 'COPY_DIRS',
+                             'WELCOME_MESSAGE', 'GOODBYE_MESSAGE', 
                              'custom_action'])
     pack_settings = cfg(HERE, VERBOSE, USE_CACHE, PYTHON_VERSION, 
                         DELAYED_INSTALL, PIP_REQUIRED, REQUIREMENTS, 
                         DEPENDENCIES, PIP_CACHE, PIP_ARGS, PIP_INSTALL_ARGS, 
                         PROJECTS, PROJECT_FILES_IGNORE_PATTERNS, COMPILE, 
-                        PYC_ONLY_DISTRIBUTION, COPY_DIRS, custom_action)
+                        PYC_ONLY_DISTRIBUTION, COPY_DIRS, WELCOME_MESSAGE, 
+                        GOODBYE_MESSAGE, custom_action)
     Packit(settings=pack_settings).main()
 
 """
