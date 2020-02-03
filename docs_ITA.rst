@@ -230,6 +230,11 @@ Questa impostazione serve a includere nella distribuzione qualsiasi materiale ag
                  ['path/to/docs', ('index.html', 'Documentation')],
                 ]
 
+``WELCOME_MESSAGE`` e ``GOODBYE_MESSAGE``
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+Questi messaggi saranno mostrati all'utente, all'inizio e alla fine del processo di installazione. Si noti che ``GOODBYE_MESSAGE`` sarà mostrato come un ``input``, in modo che la finestra della shell non possa chiudersi. Dovreste includere qui un'indicazione come "premere <invio> per terminare". 
+
 ``custom_action``
 ^^^^^^^^^^^^^^^^^
 

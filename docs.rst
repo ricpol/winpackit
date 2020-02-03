@@ -231,6 +231,11 @@ This setting is intended for any additional material you may want to include in 
                  ['path/to/docs', ('index.html', 'Documentation')],
                 ]
 
+``WELCOME_MESSAGE`` and ``GOODBYE_MESSAGE``
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+These two messages will be shown to the user at the beginning and end of the installation process. Please note that the ``GOODBYE_MESSAGE`` string will be printed as an ``input``, to prevent the shell from closing. Be sure to include a "press <enter> to quit" line here. 
+
 ``custom_action``
 ^^^^^^^^^^^^^^^^^
 
