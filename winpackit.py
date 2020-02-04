@@ -58,7 +58,7 @@ from pathlib import Path
 from hashlib import md5
 from urllib.request import urlretrieve
 
-version = '0.6.0'
+version = '0.7.0'
 
 # Python version book-keeping
 MAX_MICRO_VERSIONS = {(3, 5): 4, (3, 6): 8, (3, 7): 6, (3, 8): 1}

@@ -1,0 +1,16 @@
+WinPackIt What's New
+====================
+
+Version 0.7.0 (2020.2.4)
+========================
+
+* New DELAYED_INSTALL setting and "delayed install" machinery.
+* New WELCOME_MESSAGE and GOODBYE_MESSAGE settings.
+* Md5 check of downloaded Pythons.
+* Fixed a bug related to PROJECT_FILES_IGNORE_PATTERNS.
+
+
+Version 0.6.0 (2019.12.28)
+==========================
+
+Initial release.
