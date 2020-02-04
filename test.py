@@ -192,6 +192,15 @@ class BuildTestCase(BaseBuildTestCase):
         ret = self.start(buildir)
         self.assertTrue(all(ret))
 
+    def test_build_ignore_patterns(self):
+        self.cfg.PROJECTS = [
+                ['examples/project1', ('main.py', 'main_project1'), 
+                                      ('readme.txt', 'readme_project1')]]
+        self.cfg.PROJECT_FILES_IGNORE_PATTERNS = ['a.gif', 'foo']
+        buildir = Path('BuildTestCase_build_ignore_patterns')
+        ret = self.start(buildir) 
+        self.assertTrue(all(ret))
+
 
 class FailBuildTestCase(BaseBuildTestCase):
     # test various failures

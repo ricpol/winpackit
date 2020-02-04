@@ -639,7 +639,7 @@ class Packit:
     def _copy_files(self, orig, dest, ignore=None):
         """Run shutil.copytree, return False if errors occurred."""
         try:
-            shutil.copytree(orig, dest, ignore)
+            shutil.copytree(orig, dest, ignore=ignore)
             self.msg(LOG_VERBOSE, f'Files copied into {dest}.')
             return True
         except Exception as e:
