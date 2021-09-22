@@ -1,6 +1,12 @@
 WinPackIt What's New
 ====================
 
+Version 0.7.1 (2021.09.22)
+==========================
+
+* New SCRIPTS settings to include packages on site-packages and Sripts/bin exec.
+* Fixed python_pth pathnames on `_fix_imports` method.
+
 Version 0.7.0 (2020.2.4)
 ========================
 
