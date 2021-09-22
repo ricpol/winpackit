@@ -70,6 +70,7 @@ MIN_TARGET_VERSION = (3, 5, 0)  # this won't change, ever
 
 PY_URL = {
     (3, 9, 7, 64): ('https://www.python.org/ftp/python/3.9.7/python-3.9.7-embed-amd64.zip', '67e19ff32b3ef62a40bccd50e33b0f53'),
+    (3, 9, 7, 32): ('https://www.python.org/ftp/python/3.9.7/python-3.9.7-embed-win32.zip', '6d12e3e0f942830de8466a83d30a45fb'),
     # Python 3.9.7
     (3, 8, 1, 64): ('https://www.python.org/ftp/python/3.8.1/python-3.8.1-embed-amd64.zip', '4d091857a2153d9406bb5c522b211061'),
     (3, 8, 1, 32): ('https://www.python.org/ftp/python/3.8.1/python-3.8.1-embed-win32.zip', '980d5745a7e525be5abf4b443a00f734'),

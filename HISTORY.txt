@@ -6,6 +6,7 @@ Version 0.7.1 (2021.09.22)
 
 * New SCRIPTS settings to include packages on site-packages and Sripts/bin exec.
 * Fixed python_pth pathnames on `_fix_imports` method.
+* Added python-3.9.7-embed-arm64.zip and python-3.9.7-embed-win32.zip
 
 Version 0.7.0 (2020.2.4)
 ========================
