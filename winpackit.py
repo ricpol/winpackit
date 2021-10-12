@@ -61,18 +61,64 @@ from urllib.request import urlretrieve
 version = '0.7.0'
 
 # Python version book-keeping
-MAX_MICRO_VERSIONS = {(3, 5): 4, (3, 6): 8, (3, 7): 6, (3, 8): 1}
-MAX_MINOR_VERSIONS = {3: 8}
+MAX_MICRO_VERSIONS = {(3, 5): 4, (3, 6): 8, (3, 7): 9, (3, 8): 10, 
+                      (3, 9): 7, (3, 10): 0}
+MAX_MINOR_VERSIONS = {3: 10}
 MAX_MAJOR_VERSION = 3          # this won't change for... a while
 MIN_TARGET_VERSION = (3, 5, 0) # this won't change, ever
 
 # download urls, md5 sum for embeddable Pythons
 PY_URL = {
+    (3,10,0,64): ('https://www.python.org/ftp/python/3.10.0/python-3.10.0-embed-amd64.zip', '340408540eeff359d5eaf93139ab90fd'),
+    (3,10,0,32): ('https://www.python.org/ftp/python/3.10.0/python-3.10.0-embed-win32.zip', 'dc9d1abc644dd78f5e48edae38c7bc6b'),
+
+    (3,9,7,64): ('https://www.python.org/ftp/python/3.9.7/python-3.9.7-embed-amd64.zip', '67e19ff32b3ef62a40bccd50e33b0f53'),
+    (3,9,7,32): ('https://www.python.org/ftp/python/3.9.7/python-3.9.7-embed-win32.zip', '6d12e3e0f942830de8466a83d30a45fb'),
+    (3,9,6,64): ('https://www.python.org/ftp/python/3.9.6/python-3.9.6-embed-amd64.zip', '89980d3e54160c10554b01f2b9f0a03b'),
+    (3,9,6,32): ('https://www.python.org/ftp/python/3.9.6/python-3.9.6-embed-win32.zip', '5b9693f74979e86a9d463cf73bf0c2ab'),
+    (3,9,5,64): ('https://www.python.org/ftp/python/3.9.5/python-3.9.5-embed-amd64.zip', '0b3a4a9ae9d319885eade3ac5aca7d17'),
+    (3,9,5,32): ('https://www.python.org/ftp/python/3.9.5/python-3.9.5-embed-win32.zip', 'cacf28418ae39704743fa790d404e6bb'),
+    (3,9,4,64): ('https://www.python.org/ftp/python/3.9.4/python-3.9.4-embed-amd64.zip', '5c34eb7e79cfe8a92bf56b5168a459f4'),
+    (3,9,4,32): ('https://www.python.org/ftp/python/3.9.4/python-3.9.4-embed-win32.zip', 'b4bd8ec0891891158000c6844222014d'),
+    # there is NO 3.9.3: https://bugs.python.org/issue43710
+    (3,9,2,64): ('https://www.python.org/ftp/python/3.9.2/python-3.9.2-embed-amd64.zip', 'bd4903eb930cf1747be01e6b8dcdd28a'),
+    (3,9,2,32): ('https://www.python.org/ftp/python/3.9.2/python-3.9.2-embed-win32.zip', 'cde7d9bfd87b7777d7f0ba4b0cd4506d'),
+    (3,9,1,64): ('https://www.python.org/ftp/python/3.9.1/python-3.9.1-embed-amd64.zip', 'e70e5c22432d8f57a497cde5ec2e5ce2'),
+    (3,9,1,32): ('https://www.python.org/ftp/python/3.9.1/python-3.9.1-embed-win32.zip', '96c6fa81fe8b650e68c3dd41258ae317'),
+    (3,9,0,64): ('https://www.python.org/ftp/python/3.9.0/python-3.9.0-embed-amd64.zip', '60d0d94337ef657c2cca1d3d9a6dd94b'),
+    (3,9,0,32): ('https://www.python.org/ftp/python/3.9.0/python-3.9.0-embed-win32.zip', 'd81fc534080e10bb4172ad7ae3da5247'),
+
+    # no embeddable package available for 3.8.11+
+    (3,8,10,64): ('https://www.python.org/ftp/python/3.8.10/python-3.8.10-embed-amd64.zip', '3acb1d7d9bde5a79f840167b166bb633'),
+    (3,8,10,32): ('https://www.python.org/ftp/python/3.8.10/python-3.8.10-embed-win32.zip', '659adf421e90fba0f56a9631f79e70fb'),
+    (3,8,9,64): ('https://www.python.org/ftp/python/3.8.9/python-3.8.9-embed-amd64.zip', 'cff9e470ee6b57c63c16b8a93c586b28'),
+    (3,8,9,32): ('https://www.python.org/ftp/python/3.8.9/python-3.8.9-embed-win32.zip', '40830c33f775641ccfad5bf17ea3a893'),
+    (3,8,8,64): ('https://www.python.org/ftp/python/3.8.8/python-3.8.8-embed-amd64.zip', '2096fb5e665c6d2e746da7ff5f31d5db'),
+    (3,8,8,32): ('https://www.python.org/ftp/python/3.8.8/python-3.8.8-embed-win32.zip', 'b3e271ee4fafce0ba784bd1b84c253ae'),
+    (3,8,7,64): ('https://www.python.org/ftp/python/3.8.7/python-3.8.7-embed-amd64.zip', '61db96411fc00aea8a06e7e25cab2df7'),
+    (3,8,7,32): ('https://www.python.org/ftp/python/3.8.7/python-3.8.7-embed-win32.zip', 'efbe9f5f3a6f166c7c9b7dbebbe2cb24'),
+    (3,8,6,64): ('https://www.python.org/ftp/python/3.8.6/python-3.8.6-embed-amd64.zip', '5f95c5a93e2d8a5b077f406bc4dd96e7'),
+    (3,8,6,32): ('https://www.python.org/ftp/python/3.8.6/python-3.8.6-embed-win32.zip', '7b287a90b33c2a9be55fabc24a7febbb'),
+    (3,8,5,64): ('https://www.python.org/ftp/python/3.8.5/python-3.8.5-embed-amd64.zip', '73bd7aab047b81f83e473efb5d5652a0'),
+    (3,8,5,32): ('https://www.python.org/ftp/python/3.8.5/python-3.8.5-embed-win32.zip', 'bc354669bffd81a4ca14f06817222e50'),
+    (3,8,4,64): ('https://www.python.org/ftp/python/3.8.4/python-3.8.4-embed-amd64.zip', 'c68f60422a0e43dabf54b84a0e92ed6a'),
+    (3,8,4,32): ('https://www.python.org/ftp/python/3.8.4/python-3.8.4-embed-win32.zip', '910c307f58282aaa88a2e9df38083ed2'),
+    (3,8,3,64): ('https://www.python.org/ftp/python/3.8.3/python-3.8.3-embed-amd64.zip', 'c12ffe7f4c1b447241d5d2aedc9b5d01'),
+    (3,8,3,32): ('https://www.python.org/ftp/python/3.8.3/python-3.8.3-embed-win32.zip', '8ee09403ec0cc2e89d43b4a4f6d1521e'),
+    (3,8,2,64): ('https://www.python.org/ftp/python/3.8.2/python-3.8.2-embed-amd64.zip', '1a98565285491c0ea65450e78afe6f8d'),
+    (3,8,2,32): ('https://www.python.org/ftp/python/3.8.2/python-3.8.2-embed-win32.zip', '1b1f0f0c5ee8601f160cfad5b560e3a7'),
     (3,8,1,64): ('https://www.python.org/ftp/python/3.8.1/python-3.8.1-embed-amd64.zip', '4d091857a2153d9406bb5c522b211061'),
     (3,8,1,32): ('https://www.python.org/ftp/python/3.8.1/python-3.8.1-embed-win32.zip', '980d5745a7e525be5abf4b443a00f734'),
     (3,8,0,64): ('https://www.python.org/ftp/python/3.8.0/python-3.8.0-embed-amd64.zip', '99cca948512b53fb165084787143ef19'),
     (3,8,0,32): ('https://www.python.org/ftp/python/3.8.0/python-3.8.0-embed-win32.zip', '2ec3abf05f3f1046e0dbd1ca5c74ce88'),
 
+    # no embeddable package available for 3.7.10/3.7.12
+    (3,7,9,64): ('https://www.python.org/ftp/python/3.7.9/python-3.7.9-embed-amd64.zip', '60f77740b30030b22699dbd14883a4a3'),
+    (3,7,9,32): ('https://www.python.org/ftp/python/3.7.9/python-3.7.9-embed-win32.zip', '97c6558d479dc53bf448580b66ad7c1e'),
+    (3,7,8,64): ('https://www.python.org/ftp/python/3.7.8/python-3.7.8-embed-amd64.zip', '5ae191973e00ec490cf2a93126ce4d89'),
+    (3,7,8,32): ('https://www.python.org/ftp/python/3.7.8/python-3.7.8-embed-win32.zip', '5f0f83433bd57fa55182cb8ea42d43d6'),
+    (3,7,7,64): ('https://www.python.org/ftp/python/3.7.7/python-3.7.7-embed-amd64.zip', '6aa3b1c327561bda256f2deebf038dc9'),
+    (3,7,7,32): ('https://www.python.org/ftp/python/3.7.7/python-3.7.7-embed-win32.zip', 'e9db9cf43b4f2472d75a055380871045'),
     (3,7,6,64): ('https://www.python.org/ftp/python/3.7.6/python-3.7.6-embed-amd64.zip', '5f84f4f62a28d3003679dc693328f8fd'),
     (3,7,6,32): ('https://www.python.org/ftp/python/3.7.6/python-3.7.6-embed-win32.zip', 'accb8a137871ec632f581943c39cb566'),
     (3,7,5,64): ('https://www.python.org/ftp/python/3.7.5/python-3.7.5-embed-amd64.zip', '436b0f803d2a0b393590030b1cd59853'),
