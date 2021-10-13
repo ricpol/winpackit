@@ -66,6 +66,10 @@ MAX_MICRO_VERSIONS = {(3, 5): 4, (3, 6): 8, (3, 7): 9, (3, 8): 10,
 MAX_MINOR_VERSIONS = {3: 10}
 MAX_MAJOR_VERSION = 3          # this won't change for... a while
 MIN_TARGET_VERSION = (3, 5, 0) # this won't change, ever
+# Pythons that are not available, with fallbacks
+SPECIAL_CASE_VERSIONS = (((3, 9, 3, 32), (3, 9, 4, 32)),  # 3.9.3 -> 3.9.4
+                         ((3, 9, 3, 64), (3, 9, 4, 64)),
+                        )
 
 # download urls, md5 sum for embeddable Pythons
 PY_URL = {
@@ -443,6 +447,13 @@ class Packit:
         except IndexError:
             mc = MAX_MICRO_VERSIONS[(ma, mi)]
         self.target_py_version = ma, mi, mc, arch
+        # special cases
+        for sp_case, sp_fallback in SPECIAL_CASE_VERSIONS:
+            if (ma, mi, mc, arch) == sp_case:
+                self.msg(LOG_VERBOSE, 
+                         f'Version <{self.target_py_version}> is a special case.')
+                self.target_py_version = sp_fallback
+                break
         self.msg(LOG_VERBOSE, f'Version <{self.target_py_version}> needed.')
         return self.target_py_version
 
