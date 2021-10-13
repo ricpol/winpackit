@@ -340,7 +340,7 @@ class Packit:
         
     def msg(self, verbose, *args):
         if verbose <= self.cfg.VERBOSE:
-            print(*args)
+            print(*args, flush=True)
 
     def run_subprocess(self, *args):
         """Call subprocess.run(args). Return False if retcode!=0."""
@@ -559,7 +559,8 @@ class Packit:
         if self.cfg.VERBOSE >= LOG_DEBUG:
             self.msg(LOG_DEBUG, '->Debug - checking sys.path on target Python')
             pyexec = self.target_py_dir / 'python.exe'
-            subprocess.run((str(pyexec), '-c', 'import sys; print(sys.path)'))
+            subprocess.run((str(pyexec), '-c', 
+                            'import sys; print(sys.path, flush=True)'))
         return ret
 
     def _fix_imports(self):
