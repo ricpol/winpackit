@@ -174,7 +174,10 @@ PY_URL = {
 
 # download url, md5 sum for Get-pip
 # (note: afaik there is no official, published md5 checksum for Get-pip)
-GETPIP_URL = ('https://bootstrap.pypa.io/get-pip.py', '')
+# old Get-pip(s) for old, non-supported version(s)
+GETPIP_URL = {(3,5): ('https://bootstrap.pypa.io/pip/3.5/get-pip.py', '')}
+# default Get-pip for newest, supported versions
+GETPIP_DEFAULT_URL = ('https://bootstrap.pypa.io/get-pip.py', '')
 
 # users will run this script on their own pc to finalize installation 
 BOOTSTRAP_PY_SCRIPT = """\
@@ -528,8 +531,14 @@ class Packit:
         if not self.cfg.PIP_REQUIRED:
             self.msg(LOG_VERBOSE, 'Skipped: no Pip required in config file.')
             return ''
-        f, checksum = GETPIP_URL
+        ma, mi, mc, arch = self.target_py_version
+        f, checksum = GETPIP_URL.get((ma, mi), GETPIP_DEFAULT_URL)
+        # never use a cached Get-pip! Since it's not versioned and 
+        # there's no md5 checksum, we don't know if we have the right one.
+        old_cache_setting = self.cfg.USE_CACHE
+        self.cfg.USE_CACHE = False
         getpip = self.getfile(f, checksum=checksum, on_error_abort=False)
+        self.cfg.USE_CACHE = old_cache_setting
         if getpip:
             self.msg(LOG_VERBOSE, 'Get-pip successfully obtained.')
         else:
