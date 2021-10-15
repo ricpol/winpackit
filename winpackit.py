@@ -333,6 +333,7 @@ class Packit:
         self.delay_have_pip = False
         self.delay_have_dependencies = False
         self.delay_compile_pycs = False
+        self.cfg.PIP_ARGS.append('--no-warn-script-location')
         if self.cfg.PIP_CACHE:
             self.cfg.PIP_ARGS.append(f'--cache-dir={self.cache_dir}')
         else:
@@ -610,8 +611,7 @@ class Packit:
         pyexec = self.target_py_dir / 'python.exe'
         args = str(pyexec), str(getpipfile), *self.cfg.PIP_ARGS
         if self.run_subprocess(*args):
-            self.msg(LOG_VERBOSE, 'Pip successfully installed', 
-                     '(ignore the "add to PATH" warnings above).')
+            self.msg(LOG_VERBOSE, 'Pip successfully installed.')
             self.pip_is_present = True
             return True
         return False
