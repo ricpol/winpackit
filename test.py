@@ -1,5 +1,10 @@
 # -*- coding: utf-8 -*-
 
+# This is the Winpackit test suite. 
+# Be aware that running the suite will produce a lot of output. 
+# We recommend redirecting both stdout and stderr, eg:
+# $ python test.py > output.txt 2>&1
+
 import unittest
 from unittest import mock
 import os, sys, shutil
@@ -50,6 +55,8 @@ class BasicTestCase(unittest.TestCase):
         del self.cfg
 
     def test_parse_pyversion(self):
+        intro = f'\n#####\n##### RUNNING TEST parse_pyversion ...\n#####\n'
+        self.packit.msg(0, intro)
         self.cfg.PYTHON_VERSION = '3.6.6-64'
         self.assertEqual(self.packit.parse_pyversion(), (3, 6, 6, 64))
         self.cfg.PYTHON_VERSION = '3.5.3'
@@ -61,28 +68,42 @@ class BasicTestCase(unittest.TestCase):
         with mock.patch('sys.version_info', (3, 7, 1)):
             self.assertEqual(self.packit.parse_pyversion(), (3, 7, 1, 64))
 
+    def test_parse_pyversion_special_case(self): # see SPECIAL_CASE_VERSIONS
+        intro = f'\n#####\n##### RUNNING TEST parse_pyversion_special_case ...\n#####\n'
+        self.packit.msg(0, intro)
+        self.cfg.PYTHON_VERSION = '3.9.3-32'
+        self.assertEqual(self.packit.parse_pyversion(), (3, 9, 4, 32))
+        self.cfg.PYTHON_VERSION = '3.9.3-64'
+        self.assertEqual(self.packit.parse_pyversion(), (3, 9, 4, 64))
+        self.cfg.PYTHON_VERSION = '3.9.3'
+        self.assertEqual(self.packit.parse_pyversion(), (3, 9, 4, 64))
+
     def test_parse_pyversion_max_version(self):
         # NOTE: these yield *current* most recent versions... 
         # will need to be updated as new versions are released...
+        intro = f'\n#####\n##### RUNNING TEST parse_pyversion_max_version ...\n#####\n'
+        self.packit.msg(0, intro)
         self.cfg.PYTHON_VERSION = '3.5.20'
         self.assertEqual(self.packit.parse_pyversion(), (3, 5, 4, 64))
         self.cfg.PYTHON_VERSION = '3.7'
-        self.assertEqual(self.packit.parse_pyversion(), (3, 7, 6, 64))
+        self.assertEqual(self.packit.parse_pyversion(), (3, 7, 9, 64))
         self.cfg.PYTHON_VERSION = '3.7-32'
-        self.assertEqual(self.packit.parse_pyversion(), (3, 7, 6, 32))
+        self.assertEqual(self.packit.parse_pyversion(), (3, 7, 9, 32))
         self.cfg.PYTHON_VERSION = '3.18'
-        self.assertEqual(self.packit.parse_pyversion(), (3, 8, 1, 64))
+        self.assertEqual(self.packit.parse_pyversion(), (3, 10, 0, 64))
         self.cfg.PYTHON_VERSION = '3'
-        self.assertEqual(self.packit.parse_pyversion(), (3, 8, 1, 64))
+        self.assertEqual(self.packit.parse_pyversion(), (3, 10, 0, 64))
         self.cfg.PYTHON_VERSION = '3-32'
-        self.assertEqual(self.packit.parse_pyversion(), (3, 8, 1, 32))
+        self.assertEqual(self.packit.parse_pyversion(), (3, 10, 0, 32))
         self.cfg.PYTHON_VERSION = '4'
-        self.assertEqual(self.packit.parse_pyversion(), (3, 8, 1, 64))
+        self.assertEqual(self.packit.parse_pyversion(), (3, 10, 0, 64))
         self.cfg.PYTHON_VERSION = 'bogus'
         with mock.patch('sys.version_info', (2, 7, 10)):
             self.assertEqual(self.packit.parse_pyversion(), (3, 5, 4, 64))
 
     def test_getfile(self):
+        intro = f'\n#####\n##### RUNNING TEST getfile ...\n#####\n'
+        self.packit.msg(0, intro)
         with self.assertRaises(Exception):
             self.packit.getfile('bogus', on_error_abort=True)
         testpath = self.packit.cache_dir / 'testfile'
@@ -92,6 +113,8 @@ class BasicTestCase(unittest.TestCase):
 
     @unittest.skip('this will download and check *all* the pythons...')
     def test_get_pythons(self):
+        intro = f'\n#####\n##### RUNNING TEST get_pythons ...\n#####\n'
+        self.packit.msg(0, intro)
         for url, checksum in PY_URL.values():
             self.assertTrue(self.packit.getfile(url, checksum))
 
@@ -107,6 +130,8 @@ class BaseBuildTestCase(unittest.TestCase):
 
     def start(self, buildir):
         self.packit = Packit(settings=self.cfg)
+        intro = f'\n#####\n##### RUNNING TEST {buildir.stem} ...\n#####\n'
+        self.packit.msg(1, intro)
         self.packit.cache_dir = self.basedir / 'test_cachedir'
         self.packit.build_dir = self.basedir / buildir
         # skip md5 check to save time
@@ -250,8 +275,8 @@ class FailBuildTestCase(BaseBuildTestCase):
         self.assertEqual(ret, [True, True, True, True, True, True, False, True, True])
 
 
-class BuildTestCase1(BaseBuildTestCase):
-    # builds the same project with various Python version
+class BuildTestCaseAllPythons(BaseBuildTestCase):
+    # builds the same project with the latest version of all Pythons
     def setUp(self):
         self.cfg = _Cfg()
         self.basedir = self.cfg.HERE / 'testoutput'
@@ -267,54 +292,77 @@ class BuildTestCase1(BaseBuildTestCase):
         self.cfg.COMPILE = True
         self.cfg.PYC_ONLY_DISTRIBUTION = True
 
-    def test_build_py35032(self):
-        self.cfg.PYTHON_VERSION = '3.5.0-32'
-        buildir = Path('BuildTestCase1_build_py35032')
+    def test_build_py35_32(self):
+        self.cfg.PYTHON_VERSION = '3.5-32'
+        buildir = Path('BuildTestCase1_build_py35_32')
         ret = self.start(buildir)
         self.assertTrue(all(ret))
 
-    def test_build_py35064(self):
-        self.cfg.PYTHON_VERSION = '3.5.0'
-        buildir = Path('BuildTestCase1_build_py35064')
+    def test_build_py35_64(self):
+        self.cfg.PYTHON_VERSION = '3.5'
+        buildir = Path('BuildTestCase1_build_py35_64')
         ret = self.start(buildir)
         self.assertTrue(all(ret))
 
-    def test_build_py35464(self):
-        self.cfg.PYTHON_VERSION = '3.5.4'
-        buildir = Path('BuildTestCase1_build_py35464')
+    def test_build_py36_32(self):
+        self.cfg.PYTHON_VERSION = '3.6-32'
+        buildir = Path('BuildTestCase1_build_py36_32')
         ret = self.start(buildir)
         self.assertTrue(all(ret))
 
-    def test_build_py36064(self):
-        self.cfg.PYTHON_VERSION = '3.6.0'
-        buildir = Path('BuildTestCase1_build_py36064')
+    def test_build_py36_64(self):
+        self.cfg.PYTHON_VERSION = '3.6'
+        buildir = Path('BuildTestCase1_build_py36_64')
         ret = self.start(buildir)
         self.assertTrue(all(ret))
 
-    def test_build_py36864(self):
-        self.cfg.PYTHON_VERSION = '3.6.8'
-        buildir = Path('BuildTestCase1_build_py36864')
+    def test_build_py37_32(self):
+        self.cfg.PYTHON_VERSION = '3.7-32'
+        buildir = Path('BuildTestCase1_build_py37_32')
         ret = self.start(buildir)
         self.assertTrue(all(ret))
 
-    def test_build_py37064(self):
-        self.cfg.PYTHON_VERSION = '3.7.0'
-        buildir = Path('BuildTestCase1_build_py37064')
+    def test_build_py37_64(self):
+        self.cfg.PYTHON_VERSION = '3.7'
+        buildir = Path('BuildTestCase1_build_py37_64')
         ret = self.start(buildir)
         self.assertTrue(all(ret))
 
-    def test_build_py37564(self):
-        self.cfg.PYTHON_VERSION = '3.7.5'
-        buildir = Path('BuildTestCase1_build_py37564')
+    def test_build_py38_32(self):
+        self.cfg.PYTHON_VERSION = '3.8-32'
+        buildir = Path('BuildTestCase1_build_py38_32')
         ret = self.start(buildir)
         self.assertTrue(all(ret))
 
-    def test_build_py38064(self):
-        self.cfg.PYTHON_VERSION = '3.8.0'
-        buildir = Path('BuildTestCase1_build_py38064')
+    def test_build_py38_64(self):
+        self.cfg.PYTHON_VERSION = '3.8'
+        buildir = Path('BuildTestCase1_build_py38_64')
         ret = self.start(buildir)
         self.assertTrue(all(ret))
 
+    def test_build_py39_32(self):
+        self.cfg.PYTHON_VERSION = '3.9-32'
+        buildir = Path('BuildTestCase1_build_py39_32')
+        ret = self.start(buildir)
+        self.assertTrue(all(ret))
+
+    def test_build_py39_64(self):
+        self.cfg.PYTHON_VERSION = '3.9'
+        buildir = Path('BuildTestCase1_build_py39_64')
+        ret = self.start(buildir)
+        self.assertTrue(all(ret))
+
+    def test_build_py310_32(self):
+        self.cfg.PYTHON_VERSION = '3.10-32'
+        buildir = Path('BuildTestCase1_build_py310_32')
+        ret = self.start(buildir)
+        self.assertTrue(all(ret))
+
+    def test_build_py310_64(self):
+        self.cfg.PYTHON_VERSION = '3.10'
+        buildir = Path('BuildTestCase1_build_py310_64')
+        ret = self.start(buildir)
+        self.assertTrue(all(ret))
 
 class DelayedBuildTestCase(BaseBuildTestCase):
     # a few "delayed build" tests
