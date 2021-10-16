@@ -47,6 +47,8 @@ On the target side, you can produce builds based on any Python 3.5+. You don't h
 
 If you choose a 64 bit target Python, keep in mind that of course your application will not run on users' 32 bit Windows machines. 
 
+On top of that, always keep in mind the limitations of Python itself: Python 3.5+ won't run on Windows XP, and Python 3.9+ won't run on Windows 7 either. 
+
 Linux/Mac/Windows-32bit users.
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
@@ -124,7 +126,7 @@ This will be the *target* Python version (i.e., that of your distribution). Leav
 
 An invalid (or blank) value will default to your current Python version. If your Python doesn't match any available embeddable distribution, ``PYTHON_VERSION`` will default to ``3.5``. Remember that no embeddable Python distribution is available prior to ``3.5.0`` version. 
 
-**Note**: also, there is no embeddable distribution available for security fix-only versions ``3.5.5+`` and ``3.6.9+``. 
+**Note**: there is no embeddable distribution available for the last few security fix-only releases, for each version. If you point to one of these (eg, ``3.7.12``), WinPackiIt will fetch the last available release in that series (``3.7.9``). 
 
 ``DELAYED_INSTALL``
 ^^^^^^^^^^^^^^^^^^^
@@ -160,7 +162,7 @@ If set, WinPackIt will use its own cache folder (that is, if ``USE_CACHE`` is se
 ``PIP_ARGS``
 ^^^^^^^^^^^^
 
-A list of general options to be passed to Pip. See the Pip documentation for the available choices. Note that if ``VERBOSE=0``, the option ``-qqq`` will be passed by default. Also, ``--no-cache`` will be passed if you set ``PIP_CACHE=False``.
+A list of general options to be passed to Pip. See the Pip documentation for the available choices. Note that if ``VERBOSE=0``, the option ``-qqq`` will be passed by default. Also, ``--no-cache`` will be passed if you set ``PIP_CACHE=False``. Moreover, ``--no-warn-script-location`` will be passed to avoid spurious warnings.
 
 ``PIP_ISTALL_ARGS``
 ^^^^^^^^^^^^^^^^^^^

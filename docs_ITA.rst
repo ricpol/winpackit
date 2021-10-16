@@ -46,6 +46,8 @@ Dal lato dell'utente finale, potete generare "build" basati su qualsiasi version
 
 Se scegliete una distribuzione a 64 bit, considerate che gli utenti finali non potranno farla funzionare sul loro computer, se questo è a 32 bit. 
 
+Inoltre, naturalmente, dovete tener conto delle progressive limitazioni di Python stesso: Python 3.5+ non può essere usato su Windows XP, e Python 3.9+ neppure su Windows 7. 
+
 Utenti Linux/Mac/Windows 32 bit.
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
@@ -123,7 +125,7 @@ Questa è la versione del Python della vostra distribuzione. Lasciate ``3`` per 
 
 Un valore non valido (o vuoto) punterà alla versione del *vostro* Python attuale. Se il vostro Python non ha un "embeddable package" su cui basare la distribuzione, ``PYTHON_VERSION`` sarà ``3.5`` di default. Ricordiamo che non sono disponibili "embeddable package" prima della versione ``3.5.0``. 
 
-**Nota**: inoltre non sono disponibili "embeddable package" per le release "security fix" ``3.5.5+`` e ``3.6.9+``.
+**Nota**: non sono disponibili "embeddable package" per le ultime release "security fix" di tutte le versioni. Se indicate una di queste (per esempio, la 3.7.12), WinPackIt sceglierà per voi l'ultima release disponibile di quella serie (in questo caso, la 3.7.9).  
 
 ``DELAYED_INSTALL``
 ^^^^^^^^^^^^^^^^^^^
@@ -159,7 +161,7 @@ Se impostato, WinPackIt userà la sua cache (almeno, se avete impostato ``USE_CA
 ``PIP_ARGS``
 ^^^^^^^^^^^^
 
-Una lista di opzioni generali da passare a Pip. Consultate la documentazione di Pip per la lista delle opzioni disponibili. Notate che se ``VERBOSE=0``, l'opzione ``-qqq`` sarà passata di default. Inoltre, ``--no-cache`` sarà passata se ``PIP_CACHE=False``.
+Una lista di opzioni generali da passare a Pip. Consultate la documentazione di Pip per la lista delle opzioni disponibili. Notate che se ``VERBOSE=0``, l'opzione ``-qqq`` sarà passata di default. Inoltre, ``--no-cache`` sarà passata se ``PIP_CACHE=False``. Infine, ``--no-warn-script-location`` è sempre passata per evitare *warning* spuri. 
 
 ``PIP_ISTALL_ARGS``
 ^^^^^^^^^^^^^^^^^^^
