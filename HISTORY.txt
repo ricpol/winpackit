@@ -1,6 +1,13 @@
 WinPackIt What's New
 ====================
 
+Version 0.8.0 (2021.10.16)
+==========================
+
+* Supporting up to Python 3.10.0
+* Keep support for Python 3.5, even if Pip is ditching it. 
+* A few minor fixes, tests, docs, etc.
+
 Version 0.7.0 (2020.2.4)
 ========================
 

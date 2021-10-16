@@ -3,7 +3,7 @@
 """
 This is the WinPackIt script - the quick and dirty Python packager for Windows.
 
-Copyright 2019, Riccardo Polignieri
+Copyright 2019-2021, Riccardo Polignieri
 License: MIT - https://opensource.org/licenses/MIT
 
 Usage: 
@@ -58,7 +58,7 @@ from pathlib import Path
 from hashlib import md5
 from urllib.request import urlretrieve
 
-version = '0.7.0'
+version = '0.8.0'
 
 # Python version book-keeping
 MAX_MICRO_VERSIONS = {(3, 5): 4, (3, 6): 8, (3, 7): 9, (3, 8): 10, 
